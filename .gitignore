@@ -1,0 +1,16 @@
+# build artifacts / caches
+.cache/
+cache/
+*.img
+*.img.xz
+*.iso
+*.iso.*
+*.zip
+*.tar
+*.tar.*
+# local env/override
+.sysclone.env
+# editor junk
+*~ 
+.*.swp
+.Machine # if any

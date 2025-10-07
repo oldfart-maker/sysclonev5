@@ -12,7 +12,7 @@
       pkgs = forSystem "aarch64-linux";
       modules = [
         ./home.nix
-        ./modules/emacs.nix
+        ./emacs.nix
       ];
     };
   };

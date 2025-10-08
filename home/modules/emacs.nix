@@ -17,7 +17,6 @@ in {
     mkdir -p "${emacsDir}" "${modulesDir}"
   '';
 
-  # Clone+pull, then tangle, then sync into ~/.config/emacs-prod/
   home.activation.emacsBabelTangle = lib.hm.dag.entryAfter [ "ensureEmacsDirs" ] ''
     set -eu
     mkdir -p "$HOME/projects"
@@ -29,22 +28,23 @@ in {
       ${pkgs.git}/bin/git -C "${repoDir}" pull --ff-only
     fi
 
-    # Tangle (ensure git is on PATH for any shell-outs in your org)
+    # Make git visible to Emacs *and* disable evaluation while tangling
     PATH="${pkgs.git}/bin:$PATH" \
     ${emacsPkg}/bin/emacs --batch -l org \
-      --eval '(progn (require (quote ob-tangle))
-                     (org-babel-tangle-file
-                       (expand-file-name "emacs_config.org" "'"${repoDir}"'")))'
+      --eval '(setq org-confirm-babel-evaluate nil)' \
+      --eval '(setq org-babel-default-header-args (cons (cons :eval "no") (assq-delete-all :eval org-babel-default-header-args)))' \
+      --eval '(add-to-list '\''exec-path "'${pkgs.git}/bin'")' \
+      --eval '(setenv "PATH" (concat "'${pkgs.git}/bin':" (getenv "PATH")))' \
+      --eval '(require '\''ob-tangle)' \
+      --eval '(org-babel-tangle-file (expand-file-name "emacs_config.org" "'"${repoDir}"'"))'
 
-    # Copy the tangled results into XDG location
+    # Sync results into XDG dir
     if [ -f "${repoDir}/init.el" ]; then
       install -m 0644 "${repoDir}/init.el" "${emacsDir}/init.el"
     fi
     if [ -f "${repoDir}/early-init.el" ]; then
       install -m 0644 "${repoDir}/early-init.el" "${emacsDir}/early-init.el"
     fi
-
-    # Sync modules/*.el into ~/.config/emacs-prod/modules/
     if [ -d "${repoDir}/modules" ]; then
       ${pkgs.rsync}/bin/rsync -a --delete "${repoDir}/modules/" "${modulesDir}/"
     fi

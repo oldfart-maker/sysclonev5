@@ -1,6 +1,7 @@
 {
   imports = [
     ./modules/emacs.nix
+    ./modules/emacs-babel.nix
   ];
 
   home.username = "username";

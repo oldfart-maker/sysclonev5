@@ -1,28 +1,24 @@
 { config, pkgs, lib, ... }:
 let
-  emacsPkg = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk);
-  repoDir  = "${config.home.homeDirectory}/projects/emacs_babel_config";
+  emacsPkg   = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk);
+  repoDir    = "${config.home.homeDirectory}/projects/emacs_babel_config";
+  xdgBase    = "${config.home.homeDirectory}/.config";
+  emacsDir   = "${xdgBase}/emacs-prod";
+  modulesDir = "${emacsDir}/modules";
 in {
-  # Emacs + git on PATH
-  home.packages = [ emacsPkg pkgs.git ];
+  # Emacs & tools available everywhere
+  home.packages = [ emacsPkg pkgs.git pkgs.rsync ];
 
-  # Your existing daemon (keep as-is if you already have it)
-  systemd.user.services."emacs-prod" = {
-    Unit = {
-      Description = "Emacs daemon (emacs-prod)";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "simple";
-      ExecStart = "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod";
-      Restart = "on-failure";
-    };
-    Install.WantedBy = [ "default.target" ];
-  };
+  # Ensure shared assets dir exists (you’ll populate it later)
+  xdg.configFile."emacs-common/.keep".text = "";
 
-  # Clone + tangle at HM switch time (runs *every* switch)
-  home.activation.emacsBabelSync = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+  # Make sure our target config dirs exist
+  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    mkdir -p "${emacsDir}" "${modulesDir}"
+  '';
+
+  # Clone+pull, then tangle, then sync into ~/.config/emacs-prod/
+  home.activation.emacsBabelTangle = lib.hm.dag.entryAfter [ "ensureEmacsDirs" ] ''
     set -eu
     mkdir -p "$HOME/projects"
 
@@ -33,12 +29,39 @@ in {
       ${pkgs.git}/bin/git -C "${repoDir}" pull --ff-only
     fi
 
-    # Tangle in batch (no daemon required)
+    # Tangle (ensure git is on PATH for any shell-outs in your org)
+    PATH="${pkgs.git}/bin:$PATH" \
     ${emacsPkg}/bin/emacs --batch -l org \
       --eval '(progn (require (quote ob-tangle))
                      (org-babel-tangle-file
                        (expand-file-name "emacs_config.org" "'"${repoDir}"'")))'
+
+    # Copy the tangled results into XDG location
+    if [ -f "${repoDir}/init.el" ]; then
+      install -m 0644 "${repoDir}/init.el" "${emacsDir}/init.el"
+    fi
+    if [ -f "${repoDir}/early-init.el" ]; then
+      install -m 0644 "${repoDir}/early-init.el" "${emacsDir}/early-init.el"
+    fi
+
+    # Sync modules/*.el into ~/.config/emacs-prod/modules/
+    if [ -d "${repoDir}/modules" ]; then
+      ${pkgs.rsync}/bin/rsync -a --delete "${repoDir}/modules/" "${modulesDir}/"
+    fi
   '';
 
-  programs.git.enable = true;
+  # Socket-named daemon that *uses* ~/.config/emacs-prod as its init directory
+  systemd.user.services."emacs-prod" = {
+    Unit = {
+      Description = "Emacs daemon (emacs-prod)";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod --init-directory=%h/.config/emacs-prod";
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
 }

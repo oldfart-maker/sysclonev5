@@ -1,17 +1,17 @@
 { config, pkgs, lib, ... }:
+let
+  emacsPkg = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk);
+in {
+  # Put the binaries on PATH (repro across shells)
+  home.packages = [ emacsPkg ];
 
-{
-  # 1) Install just the Emacs binary (Wayland build on ARM)
-
-  # 2) A shared spot for cross-profile assets; we’ll use it later
-  xdg.configFile."emacs-common/.keep".text = "";
-
-  # 3) Run Emacs as a user systemd daemon; socket-activated
+  # Run the daemon (repro across boots)
   services.emacs = {
     enable = true;
-    package = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk);
-    # Optional, handy: let `editor`/`git commit` use emacsclient
-    defaultEditor = true;
-    startWithUserSession = true;
+    package = emacsPkg;
   };
+
+  # Optional, nice-to-have reproducibility for tooling
+  programs.git.enable = true;
+  # programs.bash.initExtra = ''export EDITOR=emacsclient'';
 }

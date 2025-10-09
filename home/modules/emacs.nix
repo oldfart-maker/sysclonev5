@@ -35,7 +35,6 @@ in {
       --eval '(setq org-babel-default-header-args (cons (cons :eval "no") (assq-delete-all :eval org-babel-default-header-args)))' \
       --eval "(add-to-list 'exec-path \"${pkgs.git}/bin\")" \
       --eval "(setenv \"PATH\" (concat \"${pkgs.git}/bin:\" (getenv \"PATH\")))" \
-      --eval '(setenv "PATH" (concat "'${pkgs.git}/bin':" (getenv "PATH")))' \
       --eval '(require '\''ob-tangle)' \
       --eval '(org-babel-tangle-file (expand-file-name "emacs_config.org" "'"${repoDir}"'"))'
 

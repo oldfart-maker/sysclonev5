@@ -12,10 +12,6 @@ in {
   # Ensure shared assets dir exists (you’ll populate it later)
   xdg.configFile."emacs-common/.keep".text = "";
 
-  # Make sure our target config dirs exist
-  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    mkdir -p "${emacsDir}" "${modulesDir}"
-  '';
 
   # Make sure our target config dirs exist
   home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

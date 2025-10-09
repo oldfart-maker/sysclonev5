@@ -32,10 +32,6 @@ in
 
     PATH="${pkgs.git}/bin:$PATH" \
     ${emacsPkg}/bin/emacs --batch \
-    --eval "(setq user-emacs-directory \"${emacsDir}/\")" \
-    -l org \
-    --eval "(setq org-confirm-babel-evaluate nil)" \
-    --eval "(setq org-babel-default-header-args (cons (cons :eval \"no\") (assq-delete-all :eval org-babel-default-header-args)))" \
     --eval "(add-to-list 'exec-path \"${pkgs.git}/bin\")" \
     --eval "(setenv \"PATH\" (concat \"${pkgs.git}/bin:\" (getenv \"PATH\")))" \
     --eval "(require 'ob-tangle)" \

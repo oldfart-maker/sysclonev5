@@ -5,15 +5,20 @@ let
   xdgBase    = "${config.home.homeDirectory}/.config";
   emacsDir   = "${xdgBase}/emacs-prod";
   modulesDir = "${emacsDir}/modules";
-in {
-  # Emacs & tools available everywhere
+in
+{
+  # tools available on PATH
   home.packages = [ emacsPkg pkgs.git pkgs.rsync ];
 
-  # Ensure shared assets dir exists (you’ll populate it later)
+  # shared assets anchor
   xdg.configFile."emacs-common/.keep".text = "";
 
-  # Make sure our target config dirs exist
+  # ensure target dirs exist
+  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    mkdir -p "${emacsDir}" "${modulesDir}" "${xdgBase}/emacs-common"
+  '';
 
+  # clone/pull + tangle + sync into ~/.config/emacs-prod
   home.activation.emacsBabelTangle = lib.hm.dag.entryAfter [ "ensureEmacsDirs" ] ''
     set -eu
     mkdir -p "$HOME/projects"
@@ -25,8 +30,6 @@ in {
       ${pkgs.git}/bin/git -C "${repoDir}" pull --ff-only
     fi
 
-    # Batch tangle with the right user-emacs-directory and org-id settings,
-    # and make git visible to Emacs during the run.
     PATH="${pkgs.git}/bin:$PATH" \
     ${emacsPkg}/bin/emacs --batch -l org \
       --eval "(setq org-confirm-babel-evaluate nil)" \
@@ -36,19 +39,18 @@ in {
       --eval "(require 'ob-tangle)" \
       --eval "(org-babel-tangle-file (expand-file-name \"emacs_config.org\" \"${repoDir}\"))"
 
-    # Sync results into XDG dir
     if [ -f "${repoDir}/init.el" ]; then
-      install -m 0644 "${repoDir}/init.el" "${emacsDir}/init.el"
+      install -m0644 "${repoDir}/init.el" "${emacsDir}/init.el"
     fi
     if [ -f "${repoDir}/early-init.el" ]; then
-      install -m 0644 "${repoDir}/early-init.el" "${emacsDir}/early-init.el"
+      install -m0644 "${repoDir}/early-init.el" "${emacsDir}/early-init.el"
     fi
     if [ -d "${repoDir}/modules" ]; then
       ${pkgs.rsync}/bin/rsync -a --delete "${repoDir}/modules/" "${modulesDir}/"
     fi
   '';
 
-  # Socket-named daemon that *uses* ~/.config/emacs-prod as its init directory
+  # daemon that uses ~/.config/emacs-prod as init directory
   systemd.user.services."emacs-prod" = {
     Unit = {
       Description = "Emacs daemon (emacs-prod)";
@@ -60,11 +62,6 @@ in {
       ExecStart = "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod --init-directory=%h/.config/emacs-prod";
       Restart = "on-failure";
     };
-    Install.WantedBy = [ "default.target" ];
+    Install = { WantedBy = [ "default.target" ]; };
   };
 }
-  # Make sure our target config dirs exist (and avoid org-id warning)
-  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    mkdir -p "${emacsDir}" "${modulesDir}"
-    : > "${emacsDir}/.org-id-locations"
-  '';

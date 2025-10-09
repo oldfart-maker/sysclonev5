@@ -28,20 +28,13 @@ in {
     # Batch tangle with the right user-emacs-directory and org-id settings,
     # and make git visible to Emacs during the run.
     PATH="${pkgs.git}/bin:$PATH" \
-    ${emacsPkg}/bin/emacs --batch \
-      --eval "(setq user-emacs-directory (expand-file-name \".config/emacs-prod/\" (getenv \"HOME\")))" \
-      --eval "(setq org-id-locations-file (expand-file-name \".org-id-locations\" user-emacs-directory)
-                     org-id-track-globally t
-                     org-id-locations-file-relative t)" \
-      -l org \
-      --eval '(setq org-confirm-babel-evaluate nil)' \
-      --eval '(setq org-babel-default-header-args
-                    (cons (cons :eval "no")
-                          (assq-delete-all :eval org-babel-default-header-args)))' \
+    ${emacsPkg}/bin/emacs --batch -l org \
+      --eval "(setq org-confirm-babel-evaluate nil)" \
+      --eval "(setq org-babel-default-header-args (cons (cons :eval \"no\") (assq-delete-all :eval org-babel-default-header-args)))" \
       --eval "(add-to-list 'exec-path \"${pkgs.git}/bin\")" \
       --eval "(setenv \"PATH\" (concat \"${pkgs.git}/bin:\" (getenv \"PATH\")))" \
-      --eval '(require '\''ob-tangle)' \
-      --eval '(org-babel-tangle-file (expand-file-name "emacs_config.org" "'"${repoDir}"'"))'
+      --eval "(require 'ob-tangle)" \
+      --eval "(org-babel-tangle-file (expand-file-name \"emacs_config.org\" \"${repoDir}\"))"
 
     # Sync results into XDG dir
     if [ -f "${repoDir}/init.el" ]; then

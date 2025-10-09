@@ -31,7 +31,9 @@ in
     fi
 
     PATH="${pkgs.git}/bin:$PATH" \
-    ${emacsPkg}/bin/emacs --batch \
+    ${emacsPkg}/bin/emacs --batch -Q -l org \
+    --eval "(setq org-confirm-babel-evaluate nil)" \
+    --eval "(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)))" \
     --eval "(add-to-list 'exec-path \"${pkgs.git}/bin\")" \
     --eval "(setenv \"PATH\" (concat \"${pkgs.git}/bin:\" (getenv \"PATH\")))" \
     --eval "(require 'ob-tangle)" \

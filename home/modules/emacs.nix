@@ -12,13 +12,7 @@ in {
   # Ensure shared assets dir exists (you’ll populate it later)
   xdg.configFile."emacs-common/.keep".text = "";
 
-
   # Make sure our target config dirs exist
-  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    mkdir -p "${emacsDir}" "${modulesDir}"
-    # Make sure org-id file exists so Org never warns during batch tangle
-    : > "${emacsDir}/.org-id-locations"
-  '';
 
   home.activation.emacsBabelTangle = lib.hm.dag.entryAfter [ "ensureEmacsDirs" ] ''
     set -eu
@@ -76,3 +70,8 @@ in {
     Install.WantedBy = [ "default.target" ];
   };
 }
+  # Make sure our target config dirs exist (and avoid org-id warning)
+  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    mkdir -p "${emacsDir}" "${modulesDir}"
+    : > "${emacsDir}/.org-id-locations"
+  '';

@@ -2,6 +2,7 @@
   imports = [
     ./modules/emacs.nix
     ./modules/emacs-babel.nix
+    ./modules/fonts.nix
   ];
 
   home.username = "username";

@@ -11,14 +11,8 @@ in
   home.packages = [ emacsPkg pkgs.git pkgs.rsync ];
 
   # shared assets anchor
-    xdg.configFile."emacs-common/api-keys.el".text = ''
-    (defvar my-open-api-key nil)
-    (defvar my-anthropic-api-key nil)
-    (defvar my-github-token nil)
-    (provide 'api-keys)
-  '';
-
-
+  xdg.configFile."emacs-common/api-keys.el".text = "...";
+  
   # ensure target dirs exist
   home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     mkdir -p "${emacsDir}" "${modulesDir}" "${xdgBase}/emacs-common"

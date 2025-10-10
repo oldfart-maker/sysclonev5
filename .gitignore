@@ -14,3 +14,6 @@ cache/
 *~ 
 .*.swp
 .Machine # if any
+
+# Emacs undo-tree
+*~undo-tree~

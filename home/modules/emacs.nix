@@ -11,7 +11,7 @@ in
   home.packages = [ emacsPkg pkgs.git pkgs.rsync ];
 
   # shared assets anchor
-  xdg.configFile."emacs-common/api-keys.el".text = "...";
+  xdg.configFile."emacs-common/.keep".text = "...";
   
   # ensure target dirs exist
   home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

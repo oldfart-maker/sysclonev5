@@ -97,28 +97,16 @@ sd-write:  ## Write raw image to SD (DESTRUCTIVE) — pass DEVICE=/dev/sdX CONFI
 	@mkdir -p .cache/sysclonev4 && echo "$(DEVICE_EFFECTIVE)" > .cache/sysclonev4/last-device
 
 
-flash-all: img-unpack sd-write  ## img-download + img-unpack + sd-write
+flash-all: img-unpack sd-write
 
 # Convenience: unpack + write + offline expand (re-uses existing targets/vars)
-flash-all+expand: img-unpack sd-write img-expand-rootfs-offline  ## unpack, write, expand (offline)
-
-
-# -------- Versioning --------
-tag:  ## Create annotated git tag: make tag VERSION=vX.Y.Z
-	@[ -n "$(VERSION)" ] || { echo "Set VERSION=vX.Y.Z"; exit 2; }
-	@git tag -a "$(VERSION)" -m "$(VERSION)"
-
-version-bump:  ## Write VERSION file + commit: make version-bump VERSION=vX.Y.Z
-	@[ -n "$(VERSION)" ] || { echo "Set VERSION=vX.Y.Z"; exit 2; }
-	@echo "$(VERSION)" > VERSION
-	@git add VERSION
-	@git commit -m "$(VERSION): bump VERSION file"
+flash-all+expand: img-unpack sd-write img-expand-rootfs-offline
 
 .PHONY: help show-config img-download img-unpack sd-write flash-all \
         seed-layer1 seed-first-boot-service seed-disable-firstboot \
         tag version-bump
 
-tidy:  ## Remove local backup files (.bak.*) from tools/ and seeds/
+tidy: ## Remove local backup files (.bak.*) from tools/ and seeds/
 	@rm -f tools/*.bak* 2>/dev/null || true
 	@find seeds -type f -name '*.bak.*' -delete 2>/dev/null || true
 	@echo "[tidy] done"
@@ -128,11 +116,13 @@ tidy:  ## Remove local backup files (.bak.*) from tools/ and seeds/
 # -------------------- Layer 1 (first boot) --------------------
 .PHONY: seed-layer1-disable-first-boot seed-layer1-first-boot-service
 
-seed-layer1-disable-first-boot: ensure-mounted ## Layer1: disable any OEM first-boot unit on target
+## Layer1: disable any OEM first-boot unit on target
+seed-layer1-disable-first-boot: ensure-mounted 
 	@echo "[layer1] disable-firstboot"
 	sudo env ROOT_MNT="$(ROOT_MNT)" bash tools/seed-disable-firstboot.sh
 
-seed-layer1-first-boot-service: ensure-mounted ## Layer1: install/enable our first-boot service on target
+ ## Layer1: install/enable our first-boot service on target
+seed-layer1-first-boot-service: ensure-mounted
 	@echo "[layer1] seed-first-boot-service"
 	sudo env ROOT_MNT="$(ROOT_MNT)" sudo env ROOT_MNT="$(ROOT_MNT)" WIFI_SSID="$(WIFI_SSID)" WIFI_PASS="$(WIFI_PASS)" USERNAME="$(USERNAME)" USERPASS="$(USERPASS)" bash tools/seed-first-boot-service.sh
 
@@ -144,18 +134,6 @@ clear-layer1-stamps: ## Clear Layer 1 first-boot stamps in $(ROOT_MNT)
 	@sudo rm -f "$(ROOT_MNT)/var/lib/sysclone/first-boot.done" \
 	            "$(ROOT_MNT)/var/lib/sysclone/manjaro-firstboot-disabled" 2>/dev/null || true
 	@echo "[clear-layer1-stamps] done"
-
-# ---- Check the status of layer stamps ---
-.PHONY: check-stamps show-stamps
-
-show-stamps: ensure-mounted ## List all stamp files under ROOT_MNT/var/lib/sysclone
-	@DIR="$(ROOT_MNT)/var/lib/sysclone"; \
-	if [ -d "$$DIR" ]; then \
-	  echo "[stamps] listing $$DIR"; \
-	  sudo ls -la "$$DIR"; \
-	else \
-	  echo "[stamps] directory missing: $$DIR"; \
-	fi
 
 seed-layer1-all: ensure-mounted ## Layer1: disable first-boot + install first-boot service; leaves card unmounted
 	@set -euo pipefail; \
@@ -170,7 +148,7 @@ seed-layer1-all: ensure-mounted ## Layer1: disable first-boot + install first-bo
 .PHONY: seed-layer1-all
 
 # Layer1: stage rootfs expansion for first boot (uses helper if present)
-seed-layer1-expand-rootfs: ensure-mounted ## Layer1: stage rootfs grow on first boot
+seed-layer1-expand-rootfs: ensure-mounted
 	@set -euo pipefail; \
 	  if [ -x tools/seed-expand-rootfs.sh ]; then \
 	    echo "[layer1] expand-rootfs via tools/seed-expand-rootfs.sh"; \
@@ -181,36 +159,73 @@ seed-layer1-expand-rootfs: ensure-mounted ## Layer1: stage rootfs grow on first 
 
 .PHONY: seed-layer1-expand-rootfs
 
-# Show boot/service progress on console + write logs to /boot/sysclone-status/
-seed-boot-visibility: ensure-mounted ## Add console output & BOOT logs for first-boot/L2/L2.5
-	@set -euo pipefail; \
-	  sudo env ROOT_MNT="$(ROOT_MNT)" BOOT_MNT="$(BOOT_MNT)" bash tools/seed-boot-visibility.sh; \
-	  $(MAKE) ensure-unmounted; \
-	  echo "[boot-visibility] done"
-.PHONY: seed-boot-visibility
-
-
 # --- sysclone host-side rootfs expansion (offline) --------------------------
 .PHONY: img-expand-rootfs-offline verify-rootfs-size sd-write+expand
 
-verify-rootfs-size: ensure-mounted ## Quick check (mounted): shows sizes for sanity
-	@echo "[make] verify sizes on mounted card"
-	@lsblk -e7 -o NAME,SIZE,TYPE,MOUNTPOINTS | sed -n "1,200p"
-	@df -h | sed -n "1,200p"
-	@echo "[make] .rootfs-expanded stamp:" && ls -l $(ROOT_MNT)/var/lib/sysclone/.rootfs-expanded || true
-# ---------------------------------------------------------------------------
-
-# Layer1: bootstrap clock/certs/keyrings/mirrors on first boot (pre-firstboot)
-seed-layer1-network-bootstrap: ensure-mounted ## Layer1: stage network/certs bootstrap service
-	@echo "[layer1] seed-network-bootstrap"
-	sudo env ROOT_MNT="$(ROOT_MNT)" bash tools/seed-layer1-network-bootstrap.sh
-
-.PHONY: seed-layer1-network-bootstrap
-
 # Layer1: stage network/clock/mirrors bootstrap (runs once on target)
-seed-layer1-net-bootstrap: ensure-mounted  ## Layer1: seed net/clock/certs bootstrap (on-target)
+seed-layer1-net-bootstrap: ensure-mounted
 	@echo "[layer1] net-bootstrap via tools/seed-net-bootstrap.sh"
 	sudo env ROOT_MNT="$(ROOT_MNT)" bash tools/seed-net-bootstrap.sh
+
+
+# ---------------- Layer 2: Wayland + Sway (test WM) ----------------
+.PHONY: seed-layer2-wayland seed-layer2-sway seed-layer2-all seed-layer2.5-greetd
+
+seed-layer2-wayland: ensure-mounted ## Wayland/wlroots core + pipewire stack + portal
+	bash seeds/layer2/seed-wayland.sh
+
+seed-layer2-sway: ensure-mounted ## Sway + minimal config + start-sway wrapper
+	bash seeds/layer2/seed-sway.sh
+
+clear-layer2-stamps: ## Clear Layer 2 stamps in $(ROOT_MNT)
+	@echo "[clear-layer2-stamps] at $(ROOT_MNT)/var/lib/sysclone"
+	@sudo rm -rf "$(ROOT_MNT)/var/lib/sysclone/layer2" 2>/dev/null || true
+	@sudo find "$(ROOT_MNT)/var/lib/sysclone" -maxdepth 1 -type f -name 'layer2*.stamp' -exec rm -f {} + 2>/dev/null || true
+	@echo "[clear-layer2-stamps] done"
+
+# ---------------- Layer 2: aggregate ----------------
+seed-layer2-all: ensure-mounted ## Layer2: wayland providers + sway; leaves card unmounted
+	@set -euo pipefail; \
+	  $(MAKE) clear-layer2-stamps; \
+	  $(MAKE) seed-layer2-wayland; \
+	  $(MAKE) seed-layer2-sway; \
+	  $(MAKE) ensure-unmounted; \
+	  echo "[layer2] aggregate done"
+
+.PHONY: seed-layer2-all
+# ---------------- End Layer 2 block ----------------
+
+
+# ---------------- Layer 2.5: (DM) ----------------
+seed-layer2.5-greetd: ensure-mounted
+	sudo env ROOT_MNT="/mnt/sysclone-root" bash seeds/layer2.5/seed-greetd.sh
+
+# ---------------- Layer 2.5 maintenance ----------------
+clear-layer2.5-stamps: ensure-mounted ## Clear L2.5 greetd stamp on target rootfs
+	@echo "[clear:l2.5] removing greetd stamp"
+	sudo rm -f $(ROOT_MNT)/var/lib/sysclone/.layer2.5-greetd-installed
+
+# ---------------- Layer 2.5: aggregate ----------------
+seed-layer2.5-all: ensure-mounted ## Layer2.5: greetd/tuigreet; leaves card unmounted
+	@set -euo pipefail; \
+	  $(MAKE) clear-layer2.5-stamps; \
+	  $(MAKE) seed-layer2.5-greetd; \
+	  $(MAKE) ensure-unmounted; \
+	  echo "[layer2.5] aggregate done"
+
+.PHONY: seed-layer2.5-all
+
+# ---- Check the status of layer stamps ---
+.PHONY: check-stamps show-stamps
+
+show-stamps: ensure-mounted ## List all stamp files under ROOT_MNT/var/lib/sysclone
+	@DIR="$(ROOT_MNT)/var/lib/sysclone"; \
+	if [ -d "$$DIR" ]; then \
+	  echo "[stamps] listing $$DIR"; \
+	  sudo ls -la "$$DIR"; \
+	else \
+	  echo "[stamps] directory missing: $$DIR"; \
+	fi
 
 ## Stable mount/unmount by LABEL (no /dev/sdX guessing)
 .PHONY: ensure-mounted ensure-unmounted resolve-disk
@@ -231,7 +246,6 @@ resolve-disk: # Optional: print the parent disk (e.g. /dev/sdc) resolved from la
 	@BOOT_LABEL="$(BOOT_LABEL)" ROOT_LABEL="$(ROOT_LABEL)" \
 	  BOOT_MOUNT="$(BOOT_MNT)" ROOT_MOUNT="$(ROOT_MNT)" \
 	  SUDO="$(SUDO)" bash tools/devices.sh resolve-disk
-
 
 # --- manual-only expand: pass DEVICE=/dev/sdX (or /dev/mmcblk0, /dev/nvme0n1) ---
 .PHONY: img-expand-rootfs-offline 

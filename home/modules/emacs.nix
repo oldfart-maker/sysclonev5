@@ -58,19 +58,10 @@ systemd.user.services."emacs-prod" = {
     Description = "Emacs daemon (emacs-prod)";
     After = [ "graphical-session.target" ];
     PartOf = [ "graphical-session.target" ];
-    ConditionPathExists = "%h/.config/emacs-prod/.ready";
   };
   Service = {
     Type = "simple";
-    ExecStart =
-      "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod --init-directory=%h/.config/emacs-prod";
-
-    # ✅ one string per ExecStartPre (command + args in the same string)
-    ExecStartPre = [
-      "${pkgs.coreutils}/bin/test -s %h/.config/emacs-prod/init.el"
-      "${pkgs.coreutils}/bin/test -d %h/.config/emacs-prod/modules"
-    ];
-
+    ExecStart = "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod --init-directory=%h/.config/emacs-prod";
     Restart = "on-failure";
   };
   Install.WantedBy = [ "default.target" ];

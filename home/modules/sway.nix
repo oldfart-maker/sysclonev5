@@ -3,13 +3,13 @@
   wayland.windowManager.sway = {
     enable = true;
     package = pkgs.sway;
-    config = {
-      modifier = "Mod4";
-      terminal = "alacritty";
-    };
-    extraConfig = ''
-      # extra sway config lines
-    '';
+    
+  # turn off waybar
+  config = {
+    bars = [ ];   # <— disables Sway’s built-in bar(s)
+  };
+  
+    extraConfig = builtins.readFile ./dotfiles/sway/config;
   };
 
   home.packages = with pkgs; [ wl-clipboard grim slurp swaybg wofi kanshi mako waybar ];

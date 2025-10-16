@@ -55,17 +55,26 @@ in
     fi
 
     # Execute (Elisp+Python) -> Tangle from niri_babel_config
+    export PATH="${pkgs.git}/bin:${pkgs.python3}/bin:$PATH"
+
     ${emacsPkg}/bin/emacs --batch -Q -l org \
-      --eval "(setq org-confirm-babel-evaluate nil)" \
-      --eval "(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (python . t)))" \
-      --eval "(require 'ob-tangle)" \
-      --eval "(let* ((org (expand-file-name \"${niriBabelOrgFile}\" \"${niriBabelWorkDir}\"))) \
-                (unless (file-exists-p org) (error \"Org source not found: %s\" org)) \
-                (with-current-buffer (find-file-noselect org) \
-                  ;; Don't execute KDL blocks; we only tangle them.
-                  (setq-local org-babel-default-header-args:kdl '((:eval . \"no\"))) \
-                  (org-babel-execute-buffer) \
-                  (org-babel-tangle)))"
+       --eval "(setq org-confirm-babel-evaluate nil)" \
+       --eval "(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (python . t)))" \
+       --eval "(require 'ob-tangle)" \
+       --eval "(progn
+       	           ;; Use python3 explicitly
+            	   (setq org-babel-python-command \"python3\")
+            	   ;; Quiet python-mode guessing noise in batch
+            	   (setq python-indent-guess-indent-offset nil
+                   python-indent-offset 4))" \
+       --eval "(message \"[niriBabel] python3 -> %s\" (or (executable-find \"python3\") \"<not found>\"))" \
+       --eval "(let* ((org (expand-file-name \"${niriBabelOrgFile}\" \"${niriBabelWorkDir}\")))
+                 (unless (file-exists-p org) (error \"Org source not found: %s\" org))
+                 (with-current-buffer (find-file-noselect org)
+                   ;; Don’t execute KDL blocks; just tangle them.
+                   (setq-local org-babel-default-header-args:kdl '((:eval . \"no\")))
+                   (org-babel-execute-buffer)
+                   (org-babel-tangle)))"
 
     # Deploy to ~/.config/niri with a timestamped backup
     if [ -f ${srcCfg} ]; then

@@ -28,21 +28,25 @@ in
     set -euo pipefail
 
     mkdir -p ${niriDir}
+    mkdir -p ${repoDir}    
   
     # Make sure git is on PATH if your Org references it
     export PATH="${pkgs.git}/bin:$PATH"
 
-    # 1) Execute + Tangle the Org source
     ${emacsPkg}/bin/emacs --batch -Q -l org \
-      --eval "(setq org-confirm-babel-evaluate nil)" \
-      --eval "(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (python . t)))" \
-      --eval "(require 'ob-tangle)" \
-      --eval "(let* ((file (expand-file-name \"${orgFile}\" \"${repoDir}\"))) \
-                (with-current-buffer (find-file-noselect file) \
-                  ;; Do not try to *execute* KDL blocks (we only tangle them)
-                  (setq-local org-babel-default-header-args:kdl '((:eval . \"no\"))) \
-                  (org-babel-execute-buffer) \
-                  (org-babel-tangle)))"
+       --eval "(setq org-confirm-babel-evaluate nil)" \
+       --eval "(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (python . t)))" \
+       --eval "(require 'ob-tangle)" \
+       --eval "(let* ((repo \"${repoDir}\")
+                 (org  (expand-file-name \"${orgFile}\" repo)))
+               (unless (file-directory-p repo)
+                 (make-directory repo t))
+               (unless (file-exists-p org)
+                 (error \"Org source not found: %s\" org))
+               (with-current-buffer (find-file-noselect org)
+                 (setq-local org-babel-default-header-args:kdl '((:eval . \"no\")))
+                 (org-babel-execute-buffer)
+                 (org-babel-tangle)))"
 
     # 2) Copy into ~/.config/niri (back up existing config.kdl first)
     if [ -f ${srcCfg} ]; then

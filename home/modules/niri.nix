@@ -23,13 +23,12 @@ in
     niri
   ];
 
-  # Ensure target directory exists
-  home.file.".config/niri/".directory = true;
-
   # Execute (Elisp+Python) -> Tangle -> Copy to ~/.config/niri -> Reload
   home.activation.niriBabel = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     set -euo pipefail
 
+    mkdir -p ${niriDir}
+  
     # Make sure git is on PATH if your Org references it
     export PATH="${pkgs.git}/bin:$PATH"
 

@@ -34,6 +34,18 @@ in
     niri
   ];
 
+  # (Optional, but nice to have)
+  xdg.enable = true;
+
+  xdg.dataFile."wayland-sessions/niri.desktop".text = ''
+    [Desktop Entry]
+    Name=Niri
+    Comment=A scrollable-tiling Wayland compositor
+    Exec=niri-session
+    Type=Application
+    DesktopNames=niri
+  '';
+
   home.activation.niriBabel = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     set -euo pipefail
 

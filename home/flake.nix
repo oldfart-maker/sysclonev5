@@ -1,11 +1,8 @@
 {
   description = "sysclonev5 HM (Pi)";
-  inputs = {
-    inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    inputs.home-manager.url = "github:nix-community/home-manager/release-25.11";
-    inputs.home-manager.inputs.nixpkgs.follows = "nixpkgs";
-  };
-
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.home-manager.url = "github:nix-community/home-manager/release-25.11";
+  inputs.home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs = { self, nixpkgs, home-manager, ... }:
   let

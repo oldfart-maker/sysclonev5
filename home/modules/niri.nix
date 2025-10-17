@@ -34,6 +34,42 @@ in
     niri
   ];
 
+  systemd.user.services.niri = {
+    Unit = {
+      Description = "A scrollable-tiling Wayland compositor";
+      BindsTo = [ "graphical-session.target" ];
+      Before  = [ "graphical-session.target" "xdg-desktop-autostart.target" ];
+      Wants   = [ "graphical-session-pre.target" "xdg-desktop-autostart.target" ];
+      After   = [ "graphical-session-pre.target" ];
+    };
+
+    Service = {
+      Slice = "session.slice";
+      Type  = "notify";
+      ExecStart = "${pkgs.niri}/bin/niri --session";
+      # Optional niceties:
+      Restart = "on-failure";
+    };
+
+    # Make it start with your user session
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  systemd.user.targets."niri-shutdown" = {
+    Unit = {
+      Description = "Shutdown running niri session";
+      DefaultDependencies = "no";
+      StopWhenUnneeded = true;
+      Conflicts = [ "graphical-session.target" "graphical-session-pre.target" ];
+      After     = [ "graphical-session.target" "graphical-session-pre.target" ];
+    };
+
+    # No Install section: you trigger it manually when needed,
+    # e.g. `systemctl --user start niri-shutdown.target`.
+  };
+  
   # (Optional, but nice to have)
   xdg.enable = true;
 

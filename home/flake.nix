@@ -1,8 +1,12 @@
+# home/flake.nix
 {
   description = "sysclonev5 HM (Pi)";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.home-manager.url = "github:nix-community/home-manager/release-25.11";
-  inputs.home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+  };
 
   outputs = { self, nixpkgs, home-manager, ... }:
   let
@@ -12,7 +16,6 @@
       pkgs = forSystem "aarch64-linux";
       modules = [
         ./home.nix
-        ./modules/emacs.nix
       ];
     };
   };

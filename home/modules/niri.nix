@@ -33,7 +33,7 @@ in {
     git
     python3
     wl-clipboard grim slurp
-    rofi-wayland
+    rofi
     foot
     alacritty
     ripgrep fd jq

@@ -3,7 +3,6 @@
     ./modules/emacs.nix
     ./modules/fonts.nix
     ./modules/sway.nix
-    ./modules/niri.nix
   ];
 
   home.username = "username";

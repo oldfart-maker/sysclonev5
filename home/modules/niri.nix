@@ -23,7 +23,7 @@ in {
   xdg.enable = true;
 
   home.packages = with pkgs; [
-    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite
+    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite fish
   ];
 
   # --- Activation: clone / pull / tangle / copy ---

@@ -86,8 +86,8 @@ in {
     export PATH="${pkgs.git}/bin:${pkgs.coreutils}/bin:${pkgs.findutils}/bin:$PATH"
 
     echo "[dotfiles] git=$(git --version || echo 'not found')"
-    echo "[dotfiles] repo=${DOT_REPO_URL} branch=${DOT_BRANCH}"
-    echo "[dotfiles] cache=${DOT_CACHE}"
+    echo "[dotfiles] repo=$DOT_REPO_URL branch=$DOT_BRANCH"
+    echo "[dotfiles] cache=$DOT_CACHE"
 
     # If cache dir exists but isn't a git repo, wipe it (failed prior clone)
     if [ -d "$DOT_CACHE" ] && [ ! -d "$DOT_CACHE/.git" ]; then

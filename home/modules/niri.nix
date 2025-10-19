@@ -23,7 +23,7 @@ in {
   xdg.enable = true;
 
   home.packages = with pkgs; [
-    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq
+    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar
   ];
 
   # --- Activation: clone / pull / tangle / copy ---
@@ -73,4 +73,56 @@ in {
       echo "[niri] NOTE: install binary via 'sudo pacman -Syu niri'"
     fi
   '';
+
+  # 1) Clone/update lenovo-dotfiles into a cache dir
+  home.activation.dotfilesClone = lib.hm.dag.entryAfter [ "niriBabel" ] ''
+    set -euo pipefail
+    DOT_REPO_URL="https://github.com/oldfart-maker/lenovo-dotfiles.git"
+    DOT_BRANCH="main"
+    DOT_CACHE="${config.home.homeDirectory}/.cache/lenovo-dotfiles"
+
+    if [ -d "$DOT_CACHE/.git" ]; then
+      echo "[dotfiles] updating $DOT_CACHE"
+      git -C "$DOT_CACHE" fetch --all -p
+      git -C "$DOT_CACHE" checkout "$DOT_BRANCH" || true
+      git -C "$DOT_CACHE" pull --ff-only || {
+        echo "[dotfiles] pull failed; trying fetch+reset"
+        git -C "$DOT_CACHE" fetch --all -p
+        git -C "$DOT_CACHE" reset --hard "origin/$DOT_BRANCH"
+      }
+    else
+      echo "[dotfiles] cloning -> $DOT_CACHE"
+      mkdir -p "$(dirname "$DOT_CACHE")"
+      git clone --branch "$DOT_BRANCH" --depth=1 "$DOT_REPO_URL" "$DOT_CACHE"
+    fi
+  '';
+
+  # 2) Rsync selected subdirs into ~/.config/niri/*
+  home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
+    set -euo pipefail
+    SRC="${config.home.homeDirectory}/.cache/lenovo-dotfiles/.config/niri"
+    DEST="${config.xdg.configHome}/niri"
+    mkdir -p "$DEST"
+
+    sync_one() {
+      local name="$1"
+      if [ -d "$SRC/$name" ]; then
+        echo "[niri] syncing $name -> $DEST/$name"
+        mkdir -p "$DEST/$name"
+        rsync -a --delete "$SRC/$name/" "$DEST/$name/"
+      else
+        echo "[niri] (skip) $SRC/$name missing"
+      fi
+    }
+
+    # Bring over only what you want right now
+    sync_one scripts
+    sync_one alacritty
+    sync_one waybar
+    sync_one rofi
+
+    # Make scripts runnable (your keybinds call these directly)
+    [ -d "$DEST/scripts" ] && chmod -R u+rx "$DEST/scripts"
+  '';
+
 }

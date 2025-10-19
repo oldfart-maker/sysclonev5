@@ -23,7 +23,7 @@ in {
   xdg.enable = true;
 
   home.packages = with pkgs; [
-    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar
+    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite
   ];
 
   # --- Activation: clone / pull / tangle / copy ---
@@ -156,6 +156,7 @@ home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
   # Only these four, exactly under .config/niri/*
   sync_one scripts
   sync_one alacritty
+  sync_one foot
   sync_one waybar
   sync_one rofi
 

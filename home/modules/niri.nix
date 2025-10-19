@@ -128,39 +128,46 @@ in {
     echo "[dotfiles] Ready: $(find "$DOT_CACHE/.config/niri" -maxdepth 1 -mindepth 1 -type d -printf "%f " | sed "s/^/subdirs: /")"
   '';
 
-  # 2) Rsync selected subdirs into ~/.config/niri/*
+# 2) Rsync selected subdirs from cache -> live config, with explicit roots
 home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
   set -euo pipefail
-  SRC="${config.home.homeDirectory}/.cache/lenovo-dotfiles/.config/niri"
-  DEST="${config.xdg.configHome}/niri"
-  mkdir -p "$DEST"
+  CACHE_BASE="${config.home.homeDirectory}/.cache/lenovo-dotfiles/.config"
+  DEST_NIRI="${config.xdg.configHome}/niri"
+  DEST_ROOT="${config.xdg.configHome}"
 
   # use rsync from Nix store (avoid PATH issues)
   RSYNC="${pkgs.rsync}/bin/rsync"
 
-  echo "[niri] dotfiles source: $SRC"
-  echo "[niri] contents at source (level 1):"
-  find "$SRC" -maxdepth 1 -mindepth 1 -type d -printf "  - %f/\n" || true
+  echo "[dotfiles] source base: $CACHE_BASE"
+  echo "[dotfiles] dest (niri): $DEST_NIRI"
+  echo "[dotfiles] dest (root): $DEST_ROOT"
 
-  sync_one() {
-    local name="$1"
-    if [ -d "$SRC/$name" ]; then
-      echo "[niri] syncing $name -> $DEST/$name"
-      mkdir -p "$DEST/$name"
-      "$RSYNC" -av "$SRC/$name/" "$DEST/$name/"
+  # sync_tree SRC_BASE NAME DEST_BASE DEST_NAME
+  sync_tree() {
+    local src_base="$1" name="$2" dest_base="$3" dest_name="$4"
+    local src="$src_base/$name" dest="$dest_base/$dest_name"
+    if [ -d "$src" ]; then
+      echo "[dotfiles] syncing $src -> $dest"
+      mkdir -p "$dest"
+      "$RSYNC" -av --delete "$src/" "$dest/"
     else
-      echo "[niri] MISSING at source: $SRC/$name (skipping)"
+      echo "[dotfiles] (skip) missing: $src"
     fi
   }
 
-  # Only these four, exactly under .config/niri/*
-  sync_one scripts
-  sync_one alacritty
-  sync_one foot
-  sync_one waybar
-  sync_one rofi
+  # --- Per-WM (under ~/.config/niri) ---
+  sync_tree "$CACHE_BASE/niri" "scripts"   "$DEST_NIRI" "scripts"
+  sync_tree "$CACHE_BASE/niri" "alacritty" "$DEST_NIRI" "alacritty"
+  sync_tree "$CACHE_BASE/niri" "waybar"    "$DEST_NIRI" "waybar"
+  sync_tree "$CACHE_BASE/niri" "rofi"      "$DEST_NIRI" "rofi"
+  sync_tree "$CACHE_BASE/niri" "foot"      "$DEST_NIRI" "foot"
 
-  [ -d "$DEST/scripts" ] && chmod -R u+rx "$DEST/scripts"
+  # --- System-side (under ~/.config) ---
+  # FISH: lives at ~/.config/fish (NOT under niri)
+  sync_tree "$CACHE_BASE"       "fish"     "$DEST_ROOT" "fish"
+
+  # Make scripts runnable
+  [ -d "$DEST_NIRI/scripts" ] && chmod -R u+rx "$DEST_NIRI/scripts"
 '';
 
 }

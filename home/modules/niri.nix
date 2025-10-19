@@ -76,25 +76,56 @@ in {
 
   # 1) Clone/update lenovo-dotfiles into a cache dir
   home.activation.dotfilesClone = lib.hm.dag.entryAfter [ "niriBabel" ] ''
-    set -euo pipefail
+    set -Eeuo pipefail
+
     DOT_REPO_URL="https://github.com/oldfart-maker/lenovo-dotfiles.git"
     DOT_BRANCH="main"
     DOT_CACHE="${config.home.homeDirectory}/.cache/lenovo-dotfiles"
 
+    # Ensure we use the Nix-provided git (don’t rely on system PATH)
+    export PATH="${pkgs.git}/bin:${pkgs.coreutils}/bin:${pkgs.findutils}/bin:$PATH"
+
+    echo "[dotfiles] git=$(git --version || echo 'not found')"
+    echo "[dotfiles] repo=${DOT_REPO_URL} branch=${DOT_BRANCH}"
+    echo "[dotfiles] cache=${DOT_CACHE}"
+
+    # If cache dir exists but isn't a git repo, wipe it (failed prior clone)
+    if [ -d "$DOT_CACHE" ] && [ ! -d "$DOT_CACHE/.git" ]; then
+      echo "[dotfiles] cache exists but not a repo; removing and recloning"
+      rm -rf "$DOT_CACHE"
+    fi
+
+    # Preflight: verify remote/branch is reachable
+    if ! git ls-remote --heads "$DOT_REPO_URL" "$DOT_BRANCH" >/dev/null 2>&1; then
+      echo "[dotfiles] ERROR: cannot reach $DOT_REPO_URL (branch $DOT_BRANCH)" >&2
+      exit 20
+    fi
+
     if [ -d "$DOT_CACHE/.git" ]; then
-      echo "[dotfiles] updating $DOT_CACHE"
+      echo "[dotfiles] updating existing cache"
       git -C "$DOT_CACHE" fetch --all -p
       git -C "$DOT_CACHE" checkout "$DOT_BRANCH" || true
-      git -C "$DOT_CACHE" pull --ff-only || {
-        echo "[dotfiles] pull failed; trying fetch+reset"
-        git -C "$DOT_CACHE" fetch --all -p
-        git -C "$DOT_CACHE" reset --hard "origin/$DOT_BRANCH"
-      }
+      git -C "$DOT_CACHE" reset --hard "origin/$DOT_BRANCH"
     else
-      echo "[dotfiles] cloning -> $DOT_CACHE"
+      echo "[dotfiles] cloning into cache"
       mkdir -p "$(dirname "$DOT_CACHE")"
       git clone --branch "$DOT_BRANCH" --depth=1 "$DOT_REPO_URL" "$DOT_CACHE"
     fi
+
+    # Post-checks: repo OK?
+    if [ ! -d "$DOT_CACHE/.git" ]; then
+      echo "[dotfiles] ERROR: clone/update failed; no .git in $DOT_CACHE" >&2
+      exit 21
+    fi
+
+    # Post-checks: the expected subtree exists?
+    if [ ! -d "$DOT_CACHE/.config/niri" ]; then
+      echo "[dotfiles] ERROR: $DOT_CACHE/.config/niri not found after clone" >&2
+      echo "[dotfiles] Contents under .config:"; find "$DOT_CACHE/.config" -maxdepth 1 -mindepth 1 -type d -printf "  - %f/\n" || true
+      exit 22
+    fi
+
+    echo "[dotfiles] Ready: $(find "$DOT_CACHE/.config/niri" -maxdepth 1 -mindepth 1 -type d -printf "%f " | sed "s/^/subdirs: /")"
   '';
 
   # 2) Rsync selected subdirs into ~/.config/niri/*

@@ -86,8 +86,8 @@ in {
     export PATH="${pkgs.git}/bin:${pkgs.coreutils}/bin:${pkgs.findutils}/bin:$PATH"
 
     echo "[dotfiles] git=$(git --version || echo 'not found')"
-    echo "[dotfiles] repo=$DOT_REPO_URL branch=$DOT_BRANCH"
-    echo "[dotfiles] cache=$DOT_CACHE"
+    echo "[dotfiles] repo=${DOT_REPO_URL} branch=${DOT_BRANCH}"
+    echo "[dotfiles] cache=${DOT_CACHE}"
 
     # If cache dir exists but isn't a git repo, wipe it (failed prior clone)
     if [ -d "$DOT_CACHE" ] && [ ! -d "$DOT_CACHE/.git" ]; then
@@ -129,31 +129,37 @@ in {
   '';
 
   # 2) Rsync selected subdirs into ~/.config/niri/*
-  home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
-    set -euo pipefail
-    SRC="${config.home.homeDirectory}/.cache/lenovo-dotfiles/.config/niri"
-    DEST="${config.xdg.configHome}/niri"
-    mkdir -p "$DEST"
+home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
+  set -euo pipefail
+  SRC="${config.home.homeDirectory}/.cache/lenovo-dotfiles/.config/niri"
+  DEST="${config.xdg.configHome}/niri"
+  mkdir -p "$DEST"
 
-    sync_one() {
-      local name="$1"
-      if [ -d "$SRC/$name" ]; then
-        echo "[niri] syncing $name -> $DEST/$name"
-        mkdir -p "$DEST/$name"
-        rsync -a --delete "$SRC/$name/" "$DEST/$name/"
-      else
-        echo "[niri] (skip) $SRC/$name missing"
-      fi
-    }
+  # use rsync from Nix store (avoid PATH issues)
+  RSYNC="${pkgs.rsync}/bin/rsync"
 
-    # Bring over only what you want right now
-    sync_one scripts
-    sync_one alacritty
-    sync_one waybar
-    sync_one rofi
+  echo "[niri] dotfiles source: $SRC"
+  echo "[niri] contents at source (level 1):"
+  find "$SRC" -maxdepth 1 -mindepth 1 -type d -printf "  - %f/\n" || true
 
-    # Make scripts runnable (your keybinds call these directly)
-    [ -d "$DEST/scripts" ] && chmod -R u+rx "$DEST/scripts"
-  '';
+  sync_one() {
+    local name="$1"
+    if [ -d "$SRC/$name" ]; then
+      echo "[niri] syncing $name -> $DEST/$name"
+      mkdir -p "$DEST/$name"
+      "$RSYNC" -av "$SRC/$name/" "$DEST/$name/"
+    else
+      echo "[niri] MISSING at source: $SRC/$name (skipping)"
+    fi
+  }
+
+  # Only these four, exactly under .config/niri/*
+  sync_one scripts
+  sync_one alacritty
+  sync_one waybar
+  sync_one rofi
+
+  [ -d "$DEST/scripts" ] && chmod -R u+rx "$DEST/scripts"
+'';
 
 }

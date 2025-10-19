@@ -23,7 +23,7 @@ in {
   xdg.enable = true;
 
   home.packages = with pkgs; [
-    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite fish
+    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite fish fastfetch
   ];
 
   # --- Activation: clone / pull / tangle / copy ---
@@ -164,7 +164,8 @@ home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
 
   # --- System-side (under ~/.config) ---
   # FISH: lives at ~/.config/fish (NOT under niri)
-  sync_tree "$CACHE_BASE"       "fish"     "$DEST_ROOT" "fish"
+  sync_tree "$CACHE_BASE"       "fish"		"$DEST_ROOT" "fish"
+  sync_tree "$CACHE_BASE"       "fastfetch"     "$DEST_ROOT" "fastfetch"
 
   # Make scripts runnable
   [ -d "$DEST_NIRI/scripts" ] && chmod -R u+rx "$DEST_NIRI/scripts"

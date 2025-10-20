@@ -9,6 +9,8 @@
     ./modules/stylix.nix
     ./modules/waybar-niri.nix
     ./modules/hm-deploy.nix
+    ./modules/rofi-colors-compat.nix
+    ./modules/foot.nix
   ];
 
   home.username = "username";

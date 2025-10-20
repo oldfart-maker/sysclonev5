@@ -16,7 +16,7 @@
         addCss = false;  # we'll provide our own style/colors
       };
       rofi = {
-        enable = true;
+        enable = false;
       };
     };
   };

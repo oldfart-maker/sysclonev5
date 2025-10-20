@@ -57,7 +57,7 @@ in
     /* ---- global ---- */
     * {
       font-family: "JetBrains Mono", "Symbols Nerd Font", "Noto Color Emoji", monospace, sans-serif;
-      font-size: 12pt;
+      font-size: 10pt;
       color: @fg;
     }
 
@@ -127,7 +127,7 @@ in
   home.file."${cfgPath}".text = builtins.toJSON {
     layer = "top";
     position = "top";
-    height = 28;
+    height = 20;
     margin = "6 6 0 6";
     spacing = 8;
 

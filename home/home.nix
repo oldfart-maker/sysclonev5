@@ -1,9 +1,14 @@
+{ config, pkgs, lib, ... }:
 {
   imports = [
     ./modules/emacs.nix
     ./modules/fonts.nix
     ./modules/sway.nix
     ./modules/niri.nix
+
+    # new:
+    ./modules/stylix.nix
+    ./modules/waybar.nix
   ];
 
   home.username = "username";

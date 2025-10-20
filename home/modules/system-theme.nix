@@ -1,42 +1,62 @@
-# home/modules/system-theme.nix
 { config, pkgs, lib, ... }:
-let
-  useImage   = false;  # flip to false to use base16
-  wallpaper  = "/home/username/Pictures/walls/gruv-rock.jpg";
-  base16File = ./themes/catppuccin-mocha.yaml;
-in
 {
   stylix.enable = true;
-  stylix.image = lib.mkIf useImage wallpaper;
-  stylix.base16Scheme = lib.mkIf (!useImage) base16File;
+
+  # choose ONE source of colors:
+  # stylix.image = "/home/username/Pictures/walls/gruv-rock.jpg";
+  # or:
+  # stylix.base16Scheme = ./themes/catppuccin-mocha.yaml;
+
   stylix.polarity = "dark";
 
   stylix.fonts = {
-    monospace = "JetBrains Mono";
-    sansSerif = "DejaVu Sans";
-    serif     = "DejaVu Serif";
+    monospace = {
+      package = pkgs.jetbrains-mono;   # the package that provides the font
+      name    = "JetBrains Mono";      # the font family name apps will use
+    };
+    sansSerif = {
+      package = pkgs.dejavu_fonts;
+      name    = "DejaVu Sans";
+    };
+    serif = {
+      package = pkgs.dejavu_fonts;
+      name    = "DejaVu Serif";
+    };
+    emoji = {
+      package = pkgs.noto-fonts-emoji;
+      name    = "Noto Color Emoji";
+    };
+
+    # (optional) size hints Stylix propagates to supported targets
+    sizes = {
+      applications = 10;
+      terminal     = 11;
+      desktop      = 10;
+      popups       = 10;
+    };
   };
+
   stylix.cursor = {
     package = pkgs.qogir-icon-theme;
     name    = "Qogirr";
     size    = 12;
   };
 
-  # Example: let Stylix manage Alacritty fully
-  stylix.targets.alacritty.enable = true;
-
-  # Keep Stylix hands-off where you have custom modules
-  stylix.targets.waybar = {
-    enable = false;
-    addCss = false;
+  # Keep Stylix off the targets you manage yourself
+  stylix.targets = {
+    waybar = { enable = false; addCss = false; };
+    rofi.enable = false;
+    foot.enable = false;
+    # Example of opting IN when desired:
+    # alacritty.enable = true;
   };
-  stylix.targets.rofi.enable = false;
-  stylix.targets.foot.enable = false;
 
-  # Ensure themes/fonts exist
+  # If you set GTK/icon theme names elsewhere, make sure the packages exist.
   home.packages = with pkgs; [
     jetbrains-mono
+    dejavu_fonts
+    noto-fonts-emoji
     qogir-icon-theme
-    # add your GTK/icon theme pkgs if you set gtk.theme/iconTheme
+    # your GTK + icon themes if you set gtk.theme/iconTheme
   ];
 }

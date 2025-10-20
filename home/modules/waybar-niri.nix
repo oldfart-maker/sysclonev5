@@ -17,77 +17,76 @@ in
     pkgs.pavucontrol
   ];
 
-  # Generate the stylix-driven colors file under ~/.config/niri/waybar/
+  # Generate GTK CSS variables for Waybar (no :root / --vars)
   home.file."${colPath}".text = ''
-    :root {
-      --base00: ${ch.base00};
-      --base01: ${ch.base01};
-      --base02: ${ch.base02};
-      --base03: ${ch.base03};
-      --base04: ${ch.base04};
-      --base05: ${ch.base05};
-      --base06: ${ch.base06};
-      --base07: ${ch.base07};
-      --base08: ${ch.base08};
-      --base09: ${ch.base09};
-      --base0A: ${ch.base0A};
-      --base0B: ${ch.base0B};
-      --base0C: ${ch.base0C};
-      --base0D: ${ch.base0D};
-      --base0E: ${ch.base0E};
-      --base0F: ${ch.base0F};
+    @define-color base00 ${ch.base00};
+    @define-color base01 ${ch.base01};
+    @define-color base02 ${ch.base02};
+    @define-color base03 ${ch.base03};
+    @define-color base04 ${ch.base04};
+    @define-color base05 ${ch.base05};
+    @define-color base06 ${ch.base06};
+    @define-color base07 ${ch.base07};
+    @define-color base08 ${ch.base08};
+    @define-color base09 ${ch.base09};
+    @define-color base0A ${ch.base0A};
+    @define-color base0B ${ch.base0B};
+    @define-color base0C ${ch.base0C};
+    @define-color base0D ${ch.base0D};
+    @define-color base0E ${ch.base0E};
+    @define-color base0F ${ch.base0F};
 
-      --bg:       var(--base00);
-      --bg-alt:   var(--base01);
-      --bg-alt-2: var(--base02);
-      --fg:       var(--base05);
+    /* Friendly aliases */
+    @define-color bg       ${ch.base00};
+    @define-color bg_alt   ${ch.base01};
+    @define-color bg_alt2  ${ch.base02};
+    @define-color fg       ${ch.base05};
 
-      --red:    var(--base08);
-      --orange: var(--base09);
-      --yellow: var(--base0A);
-      --green:  var(--base0B);
-      --teal:   var(--base0C);
-      --blue:   var(--base0D);
-      --mauve:  var(--base0E);
-      --peach:  var(--base09);
-      --accent: var(--base0D);
-    }
+    @define-color red      ${ch.base08};
+    @define-color orange   ${ch.base09};
+    @define-color yellow   ${ch.base0A};
+    @define-color green    ${ch.base0B};
+    @define-color teal     ${ch.base0C};
+    @define-color blue     ${ch.base0D};
+    @define-color mauve    ${ch.base0E};
+    @define-color accent   ${ch.base0D};
   '';
 
-  # Main stylesheet that imports the palette
+  # Main stylesheet that imports the GTK color defs above
   home.file."${cssPath}".text = ''
     @import url("colors.css");
 
     * {
       font-family: Inter, JetBrainsMono, monospace;
       font-size: 12pt;
+      color: @fg;
     }
 
     window#waybar {
-      background: var(--bg);
-      color: var(--fg);
+      background: @bg;
+      color: @fg;
       border-radius: 10px;
     }
 
     .module {
       padding: 2px 10px;
       border-radius: 8px;
-      background: var(--bg-alt);
+      background: @bg_alt;
     }
 
-    .module:hover { background: var(--bg-alt-2); }
+    .module:hover { background: @bg_alt2; }
 
-    #clock      { color: var(--accent); }
-    #network    { color: var(--blue); }
-    #battery    { color: var(--green); }
-    #pulseaudio { color: var(--mauve); }
-    #backlight  { color: var(--yellow); }
-    #cpu        { color: var(--peach); }
-    #memory     { color: var(--teal); }
-    #tray       { color: var(--fg); }
+    #clock      { color: @accent; }
+    #network    { color: @blue; }
+    #battery    { color: @green; }
+    #pulseaudio { color: @mauve; }
+    #backlight  { color: @yellow; }
+    #cpu        { color: @orange; }  /* was 'peach' */
+    #memory     { color: @teal; }
+    #tray       { color: @fg; }
 
-    #battery.warning  { color: var(--yellow); }
-    #battery.critical { color: var(--red); }
+    #battery.warning  { color: @yellow; }
+    #battery.critical { color: @red; }
   '';
 
   # Waybar JSON config
@@ -136,20 +135,5 @@ in
     cpu      = { interval = 3; format = "  {usage}%"; tooltip = false; };
     memory   = { interval = 5; format = "  {used:0.1f}G"; tooltip = false; };
     tray     = { spacing = 8; };
-  };
-
-  # Dedicated user service that points Waybar to the niri-specific paths
-  systemd.user.services."waybar-niri" = {
-    Unit = {
-      Description = "Waybar for Niri (custom path)";
-      PartOf = [ "graphical-session.target" ];
-      After  = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "simple";
-      ExecStart = "${pkgs.waybar}/bin/waybar -c ${cfgPath} -s ${cssPath}";
-      Restart = "on-failure";
-    };
-    Install.WantedBy = [ "graphical-session.target" ];
   };
 }

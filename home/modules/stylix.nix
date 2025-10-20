@@ -12,7 +12,7 @@
 
     targets = {
       waybar = {
-        enable = true;
+        enable = false;
         addCss = false;  # we'll provide our own style/colors
       };
       rofi = {

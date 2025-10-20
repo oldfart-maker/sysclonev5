@@ -1,8 +1,8 @@
+# modules/waybar-niri.nix
 { config, pkgs, lib, ... }:
 
 let
-  # Stylix color helpers (provided when stylix.enable = true)
-  c  = config.lib.stylix.colors;
+  # Stylix colors (requires stylix.enable = true)
   ch = config.lib.stylix.colors.withHashtag;
 
   baseDir = "${config.home.homeDirectory}/.config/niri/waybar";
@@ -11,13 +11,12 @@ let
   colPath = "${baseDir}/colors.css";
 in
 {
-  # Install waybar (and optional helpers)
   home.packages = [
     pkgs.waybar
     pkgs.pavucontrol
   ];
 
-  # Generate GTK CSS variables for Waybar (no :root / --vars)
+  # --- colors.css (GTK CSS variables via @define-color) ---
   home.file."${colPath}".text = ''
     @define-color base00 ${ch.base00};
     @define-color base01 ${ch.base01};
@@ -36,7 +35,6 @@ in
     @define-color base0E ${ch.base0E};
     @define-color base0F ${ch.base0F};
 
-    /* Friendly aliases */
     @define-color bg       ${ch.base00};
     @define-color bg_alt   ${ch.base01};
     @define-color bg_alt2  ${ch.base02};
@@ -52,46 +50,80 @@ in
     @define-color accent   ${ch.base0D};
   '';
 
-  # Main stylesheet that imports the GTK color defs above
+  # --- style.css (imports the palette above) ---
   home.file."${cssPath}".text = ''
     @import url("colors.css");
 
-   * {
-      /* Order matters: a mono Nerd font + the Symbols set + emoji as fallback */
-      font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font",
-                "Noto Color Emoji", monospace, sans-serif;
+    /* ---- global ---- */
+    * {
+      font-family: "JetBrains Mono", "Symbols Nerd Font", "Noto Color Emoji", monospace, sans-serif;
       font-size: 12pt;
       color: @fg;
     }
 
     window#waybar {
-      background: @bg;
-      color: @fg;
-      border-radius: 10px;
+      background: alpha(@bg, 0.92);   /* subtle transparency */
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 8px 24px alpha(@fg, 0.06);
     }
 
+    /* block groups */
+    .modules-left,
+    .modules-center,
+    .modules-right {
+      margin: 0 6px;
+    }
+
+    /* ---- module "pill" look ---- */
     .module {
-      padding: 2px 10px;
-      border-radius: 8px;
-      background: @bg_alt;
+      padding: 4px 12px;
+      margin: 0 6px;
+      border-radius: 10px;
+      background: alpha(@bg_alt, 0.9);
     }
 
-    .module:hover { background: @bg_alt2; }
+    .module:hover { background: alpha(@bg_alt2, 0.9); }
 
+    /* separators (optional) */
+    /*
+    .module + .module {
+      border-left: 1px solid alpha(@fg, 0.08);
+    }
+    */
+
+    /* ---- per-module accents ---- */
     #clock      { color: @accent; }
     #network    { color: @blue; }
     #battery    { color: @green; }
     #pulseaudio { color: @mauve; }
     #backlight  { color: @yellow; }
-    #cpu        { color: @orange; }  /* was 'peach' */
+    #cpu        { color: @orange; }
     #memory     { color: @teal; }
     #tray       { color: @fg; }
 
+    /* battery states */
     #battery.warning  { color: @yellow; }
-    #battery.critical { color: @red; }
+    #battery.critical { color: @red;    }
+
+    /* pulseaudio muted state pop */
+    #pulseaudio.muted {
+      color: @red;
+      background: alpha(@red, 0.10);
+    }
+
+    /* network disconnected */
+    #network.disconnected {
+      color: @orange;
+      background: alpha(@orange, 0.10);
+    }
+
+    /* tray cleanup */
+    #tray { padding-right: 8px; }
+    #tray > * { margin: 0 4px; }
   '';
 
-  # Waybar JSON config
+  # --- Waybar JSON config ---
   home.file."${cfgPath}".text = builtins.toJSON {
     layer = "top";
     position = "top";

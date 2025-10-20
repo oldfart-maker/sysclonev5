@@ -3,6 +3,7 @@
   imports = [
     ./modules/emacs.nix
     ./modules/fonts.nix
+    ./modules/fonts-extra.nix
     ./modules/sway.nix
     ./modules/niri.nix
     ./modules/stylix.nix

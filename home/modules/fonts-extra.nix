@@ -1,11 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
-  fonts.fontconfig.enable = true;
-
-  # Smallest fix: just install the symbols + an emoji font.
+  # Add icon/emoji fonts (no old nerdfonts.override)
   home.packages = [
-    (pkgs.nerdfonts.override { fonts = [ "NerdFontsSymbolsOnly" ]; })
-    pkgs.noto-fonts-emoji
-    pkgs.font-awesome        # optional; some themes use FA
+    pkgs.nerd-fonts.symbols-only   # provides all Nerd Font glyphs (PUA) for icons
+    pkgs.noto-fonts-emoji          # color emoji fallback
+    pkgs.font-awesome              # optional, some modules/themes use FA
   ];
 }

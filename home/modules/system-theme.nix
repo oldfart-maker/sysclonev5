@@ -1,7 +1,7 @@
 # home/modules/system-theme.nix
 { config, pkgs, lib, ... }:
 let
-  useImage   = true;  # flip to false to use base16
+  useImage   = false;  # flip to false to use base16
   wallpaper  = "/home/username/Pictures/walls/gruv-rock.jpg";
   base16File = ./themes/catppuccin-mocha.yaml;
 in

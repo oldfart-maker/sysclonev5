@@ -6,7 +6,7 @@
     ./modules/fonts-extra.nix
     ./modules/sway.nix
     ./modules/niri.nix
-    ./modules/stylix.nix
+    ./modules/system-theme.nix
     ./modules/waybar-niri.nix
     ./modules/hm-deploy.nix
     ./modules/rofi-colors-compat.nix

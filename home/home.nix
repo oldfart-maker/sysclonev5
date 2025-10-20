@@ -5,10 +5,9 @@
     ./modules/fonts.nix
     ./modules/sway.nix
     ./modules/niri.nix
-
-    # new:
     ./modules/stylix.nix
     ./modules/waybar.nix
+    ./modules/hm-deploy.nix
   ];
 
   home.username = "username";

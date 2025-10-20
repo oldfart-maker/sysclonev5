@@ -5,7 +5,7 @@
   # choose ONE source of colors:
   # stylix.image = "/home/username/Pictures/walls/gruv-rock.jpg";
 
-  stylix.base16Scheme = ./themes/catppuccin-mocha.yaml;
+  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
 
   stylix.polarity = "dark";
 

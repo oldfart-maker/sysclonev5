@@ -56,8 +56,10 @@ in
   home.file."${cssPath}".text = ''
     @import url("colors.css");
 
-    * {
-      font-family: Inter, JetBrainsMono, monospace;
+   * {
+      /* Order matters: a mono Nerd font + the Symbols set + emoji as fallback */
+      font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font",
+                "Noto Color Emoji", monospace, sans-serif;
       font-size: 12pt;
       color: @fg;
     }

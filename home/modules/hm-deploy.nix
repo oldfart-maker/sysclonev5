@@ -1,19 +1,16 @@
-# modules/hm-deploy.nix (final)
+# modules/hm-deploy.nix
 { config, pkgs, lib, ... }:
-let
-  repoDir = "${config.home.homeDirectory}/projects/sysclonev5/home";
-in
 {
   home.packages = [ pkgs.git pkgs.bashInteractive ];
+
+  # Ensure ~/.local/bin is on PATH so you can just run `hm-update`
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 
   home.file.".local/bin/hm-update".text = ''
     #!/usr/bin/env bash
     set -Eeuo pipefail
 
-    # Baked-in repo path from Nix:
-    REPO="${repoDir}"
-    # IMPORTANT: don't write ${REPO} here (that would be Nix interpolation).
+    REPO="$HOME/projects/sysclonev5/home"
     FLAKE="$REPO#username"
 
     cd "$REPO"

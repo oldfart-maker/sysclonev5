@@ -2,8 +2,6 @@
 { config, pkgs, lib, ... }:
 {
   home.packages = [ pkgs.git pkgs.bashInteractive ];
-
-  # Ensure ~/.local/bin is on PATH for new login shells
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 
   home.file.".local/bin/hm-update" = {
@@ -28,7 +26,7 @@
         fi
       fi
 
-      case "${1:-}" in
+      case "$1" in
         --force)
           echo "[hm-update] HARD reset to origin/$BRANCH"
           git reset --hard "origin/$BRANCH"

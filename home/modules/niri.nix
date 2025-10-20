@@ -23,7 +23,7 @@ in {
   xdg.enable = true;
 
   home.packages = with pkgs; [
-    git python3 rofi foot alacritty wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite fish fastfetch
+    git python3 rofi foot wl-clipboard grim slurp ripgrep fd jq waybar xwayland-satellite fish fastfetch
   ];
 
   # --- Activation: clone / pull / tangle / copy ---
@@ -157,7 +157,6 @@ home.activation.dotfilesSyncNiri = lib.hm.dag.entryAfter [ "dotfilesClone" ] ''
 
   # --- Per-WM (under ~/.config/niri) ---
   sync_tree "$CACHE_BASE/niri" "scripts"   "$DEST_NIRI" "scripts"
-  sync_tree "$CACHE_BASE/niri" "alacritty" "$DEST_NIRI" "alacritty"
   sync_tree "$CACHE_BASE/niri" "waybar"    "$DEST_NIRI" "waybar"
   sync_tree "$CACHE_BASE/niri" "rofi"      "$DEST_NIRI" "rofi"
   sync_tree "$CACHE_BASE/niri" "foot"      "$DEST_NIRI" "foot"

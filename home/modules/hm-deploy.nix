@@ -2,8 +2,6 @@
 { config, pkgs, lib, ... }:
 {
   home.packages = [ pkgs.git pkgs.bashInteractive ];
-
-  # ensure ~/.local/bin is on PATH for new login shells
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 
   home.file.".local/bin/hm-update" = {
@@ -28,21 +26,16 @@
         fi
       fi
 
-      # Handle optional flag safely under `set -u`
-      arg="${1-}"
-      case "$arg" in
-        --force)
-          echo "[hm-update] HARD reset to origin/$BRANCH"
-          git reset --hard "origin/$BRANCH"
-          ;;
-        ""|*)
-          echo "[hm-update] Rebase onto origin/$BRANCH"
-          git pull --rebase --autostash || {
-            echo "[hm-update] Rebase failed. Resolve or run: hm-update --force"
-            exit 1
-          }
-          ;;
-      esac
+      if [ $# -gt 0 ] && [ "$1" = "--force" ]; then
+        echo "[hm-update] HARD reset to origin/$BRANCH"
+        git reset --hard "origin/$BRANCH"
+      else
+        echo "[hm-update] Rebase onto origin/$BRANCH"
+        git pull --rebase --autostash || {
+          echo "[hm-update] Rebase failed. Resolve and rerun, or use: hm-update --force"
+          exit 1
+        }
+      fi
 
       echo "[hm-update] building $FLAKE"
       home-manager switch --flake "$FLAKE" --refresh -v

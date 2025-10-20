@@ -6,7 +6,7 @@
     ./modules/sway.nix
     ./modules/niri.nix
     ./modules/stylix.nix
-    ./modules/waybar.nix
+    ./modules/waybar-niri.nix
     ./modules/hm-deploy.nix
   ];
 

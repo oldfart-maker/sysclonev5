@@ -1,46 +1,51 @@
-home.file.".local/bin/hm-update" = {
-  text = ''
-    #!/usr/bin/env bash
-    set -Eeuo pipefail
+# modules/hm-deploy.nix
+{ config, pkgs, lib, ... }:
+{
+  home.packages = [ pkgs.git pkgs.bashInteractive ];
 
-    REPO="$HOME/projects/sysclonev5/home"
-    FLAKE="$REPO#username"
+  # Ensure ~/.local/bin is on PATH for new login shells
+  home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 
-    cd "$REPO"
+  home.file.".local/bin/hm-update" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -Eeuo pipefail
 
-    # Figure out the current branch (stay on whatever you're using)
-    BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+      REPO="$HOME/projects/sysclonev5/home"
+      FLAKE="$REPO#username"
 
-    # Fetch latest and prune stale refs
-    git fetch --all --prune
+      cd "$REPO"
 
-    # Ensure upstream is set to origin/<branch> (create if missing)
-    if ! git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
-      if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
-        git branch --set-upstream-to "origin/$BRANCH" "$BRANCH"
-      else
-        # If remote branch doesn't exist yet, create local tracking
-        git push -u origin "$BRANCH"
+      # Use current branch; keep it in sync with its upstream
+      BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+      git fetch --all --prune
+
+      if ! git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+        if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+          git branch --set-upstream-to "origin/$BRANCH" "$BRANCH"
+        else
+          git push -u origin "$BRANCH"
+        fi
       fi
-    fi
 
-    case "${1:-}" in
-      --force)
-        echo "[hm-update] HARD resetting to origin/$BRANCH"
-        git reset --hard "origin/$BRANCH"
-        shift || true
-        ;;
-      *)
-        echo "[hm-update] Rebase onto origin/$BRANCH (keeps local commits)"
-        git pull --rebase --autostash || {
-          echo "[hm-update] Rebase failed. You can resolve and rerun, or use: hm-update --force"
-          exit 1
-        }
-        ;;
-    esac
+      case "${1:-}" in
+        --force)
+          echo "[hm-update] HARD reset to origin/$BRANCH"
+          git reset --hard "origin/$BRANCH"
+          shift || true
+          ;;
+        *)
+          echo "[hm-update] Rebase onto origin/$BRANCH"
+          git pull --rebase --autostash || {
+            echo "[hm-update] Rebase failed. Resolve or run: hm-update --force"
+            exit 1
+          }
+          ;;
+      esac
 
-    echo "[hm-update] building $FLAKE"
-    home-manager switch --flake "$FLAKE" --refresh -v
-  '';
-  executable = true;
-};
+      echo "[hm-update] building $FLAKE"
+      home-manager switch --flake "$FLAKE" --refresh -v
+    '';
+    executable = true;
+  };
+}

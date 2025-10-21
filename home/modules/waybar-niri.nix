@@ -438,3 +438,4 @@ window#waybar.empty #window {
 // waybar-wlr-workspaces
 
   }
+}

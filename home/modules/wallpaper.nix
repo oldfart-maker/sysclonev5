@@ -93,13 +93,18 @@ in
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };
-    Service = {
-      Type = "simple";
-      # Only run if in a Wayland session (Niri/Sway/etc.)
-      ExecCondition = ''${pkgs.bash}/bin/bash -lc 'test -n "$WAYLAND_DISPLAY" -o -n "$SWAYSOCK"' '';
-      ExecStart = "${wallpaperApply}/bin/wallpaper-apply ${currentLink}";
-      Restart = "no";
-    };
+Service = {
+  Type = "simple";
+  # Only run if in a Wayland session (Niri/Sway/etc.)
+  ExecCondition = [
+    "${pkgs.bash}/bin/bash"
+    "-lc"
+    "test -n \"$WAYLAND_DISPLAY\" -o -n \"$SWAYSOCK\""
+  ];
+  ExecStart = "${wallpaperApply}/bin/wallpaper-apply ${currentLink}";
+  Restart = "no";
+};
+
     Install = { WantedBy = [ "graphical-session.target" ]; };
   };
 

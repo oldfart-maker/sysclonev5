@@ -54,13 +54,11 @@ in
   home.file."${cssPath}".text = ''
     @import url("colors.css");
 
-/** ********** Fonts ********** **/
 * {
     font-family: "JetBrains Mono", "Symbols Nerd Font", Iosevka, archcraft, sans-serif;
     font-size: 10px;
 }
 
-/** ********** Waybar Window ********** **/
 window#waybar {
     background-color: @background;
     color: @background;
@@ -79,17 +77,14 @@ window#waybar.empty {
 window#waybar.solo {
 }
 
-/** ********** Backlight ********** **/
 #backlight {
 	background-image: linear-gradient(to right, @green , @magenta);
 }
 
-/** ********** Clock ********** **/
 #clock {
 	background-image: linear-gradient(to right, @red , @blue);
 }
 
-/** ********** Niri Workspaces ********** **/
 #workspaces {
 	background-color: @background-alt;
 	color: @foreground;
@@ -142,12 +137,10 @@ window#waybar.solo {
 #workspaces button#sway-workspace-1 {
 }
 
-/* If workspaces is the leftmost module, omit left margin */
 .modules-left > widget:first-child > #workspaces {
     margin-left: 0;
 }
 
-/* If workspaces is the rightmost module, omit right margin */
 .modules-right > widget:last-child > #workspaces {
     margin-right: 0;
 }
@@ -165,22 +158,23 @@ window#waybar.empty #window {
 	background-color: transparent;
 }
 
-/** ********** Tray ********** **/
 #tray {
 	background-color: @background-alt;
 	border-radius: 12px 0px 0px 0px;
 	padding: 4px 6px;
 }
+
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
+
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
 }
+
 #tray > .active {
 }
 
-/** ********** MPD ********** **/
 @keyframes gradient {
 	0% {
 		background-position: 0% 50%;
@@ -218,7 +212,6 @@ window#waybar.empty #window {
 #mpd.paused {
 }
 
-/** ********** Idle Inhibitor ********** **/
 #idle_inhibitor {
 	background-image: linear-gradient(to right, @magenta, @yellow);
 }
@@ -226,7 +219,6 @@ window#waybar.empty #window {
 	background-image: linear-gradient(to right, @red , @yellow);
 }
 
-/** ********** Pulseaudio ********** **/
 #pulseaudio {
 	background-image: linear-gradient(to right, @blue , @green);
 }
@@ -238,7 +230,6 @@ window#waybar.empty #window {
 	background-image: linear-gradient(to right, @red , @yellow);
 }
 
-/** ********** Network ********** **/
 #network {
 	background-image: linear-gradient(to right, @magenta , @cyan);
 }
@@ -246,36 +237,46 @@ window#waybar.empty #window {
 #network.disconnected {
 	background-image: linear-gradient(to right, @red , @yellow);
 }
+
 #network.disabled {
 	background-image: linear-gradient(to right, @red , @red);
 	color: @white;
 }
+
 #network.linked {
 }
+
 #network.ethernet {
 }
+
 #network.wifi {
 }
 
-/** ********** Bluetooth ********** **/
 #bluetooth {
 	background-image: linear-gradient(to right, @yellow , @blue);
 }
+
 #bluetooth.disabled{
 	background-image: linear-gradient(to right, @red , @red);
 	color: @white;
 }
+
 #bluetooth.off{
 	background-image: linear-gradient(to right, @red , @yellow);
 }
+
 #bluetooth.on{
 }
+
 #bluetooth.connected{
 }
+
 #bluetooth.discoverable{
 }
+
 #bluetooth.discovering{
 }
+
 #bluetooth.pairable{
 }
 
@@ -293,7 +294,6 @@ window#waybar.empty #window {
 
   # --- Waybar JSON config ---
   home.file."${cfgPath}".text = builtins.toJSON {
-// waybar-backlight
     "backlight": {
 		"interval": 2,
 		"align": 0,
@@ -309,7 +309,6 @@ window#waybar.empty #window {
         "smooth-scrolling-threshold": 1,
     },
 
-// waybar-bluetooth
     "bluetooth": {
         "format": " {status}",
         "format-on": " {status}",
@@ -323,22 +322,19 @@ window#waybar.empty #window {
         "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
     },
 
-// waybar-clock
-    "clock": {
+  "clock": {
 	"interval": 60,
 	"align": 0,
 	"rotate": 0,
-        //"timezone": "America/New_York",
         "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
         "format": " {:%I:%M %p}",
         "format-alt": " {:%a %b %d, %G}"
     },
 
-// waybar-cpu
+# waybar-cpu
 
-// waybar-disk
+# waybar-disk
 
-// waybar-idle-inhibitor
     "idle_inhibitor": {
          "format": "{icon}",
          "format-icons": {
@@ -348,11 +344,10 @@ window#waybar.empty #window {
          "timeout": 30
     },
 
-// waybar-inhibitor
-// waybar-keyboard-state
-// waybar-memory
+# waybar-inhibitor
+# waybar-keyboard-state
+# waybar-memory
 
-// waybar-mpd
     "mpd": {
         "interval": 2,
         "unknown-tag": "N/A",
@@ -367,7 +362,6 @@ window#waybar.empty #window {
         },
         "tooltip-format": "MPD (connected)",
         "tooltip-format-disconnected": "MPD (disconnected)",
-		// Commands to execute on events
         "on-click": "mpc toggle",
         "on-click-right": "mpc next",
         "on-update": "",
@@ -376,7 +370,6 @@ window#waybar.empty #window {
         "smooth-scrolling-threshold": 1,
     },
 
-// waybar-network
     "network": {
 		"interval": 5,
         //"interface": "wlan*", // (Optional) To force the use of this interface, set it for netspeed to work
@@ -389,7 +382,6 @@ window#waybar.empty #window {
         "tooltip-format": " {ifname} via {gwaddr}",
     },
 
-// waybar-pulseaudio
     "pulseaudio": {
         //"format": "{volume}% {icon} {format_source}",
         "format": "{icon} {volume}% {format_source}",
@@ -408,16 +400,15 @@ window#waybar.empty #window {
             "default": ["", "", ""]
         },
         "scroll-step": 5.0,
-	// Commands to execute on events
         "on-click": "pulsemixer --toggle-mute",
         "on-click-right": "pulsemixer --toggle-mute",
         "smooth-scrolling-threshold": 1,
     },
 
-// waybar-sndio
-// waybar-states
+# waybar-sndio
+# waybar-states
 
-// waybar-niri-window
+ waybar-niri-window
     "niri/window": {
     	"format": "{}",
     },
@@ -426,16 +417,14 @@ window#waybar.empty #window {
 	"format": "{value}",
 },
 
-// waybar-temperature
+# waybar-temperature
 
-// waybar-tray
     "tray": {
         "icon-size": 16,
         "spacing": 10
     },
 
-// waybar-wlr-taskbar
-// waybar-wlr-workspaces
+# waybar-wlr-taskbar
+# waybar-wlr-workspaces
 '';
-  
-}
+ }

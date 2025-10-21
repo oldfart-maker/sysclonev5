@@ -291,9 +291,12 @@ window#waybar.empty #window {
 #pulseaudio,
 #network,
 #bluetooth
+'';
+ }
 
   # --- Waybar JSON config ---
   home.file."${cfgPath}".text = builtins.toJSON {
+
     "backlight": {
 		"interval": 2,
 		"align": 0,

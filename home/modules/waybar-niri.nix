@@ -436,6 +436,7 @@ window#waybar.empty #window {
 
 // waybar-wlr-taskbar
 // waybar-wlr-workspaces
-
-  }
-}
+'';
+  
+} # end JSON
+} # end module

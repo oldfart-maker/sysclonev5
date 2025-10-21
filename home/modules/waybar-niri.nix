@@ -300,7 +300,6 @@ window#waybar.empty #window {
 		"rotate": 0,
         "format": "{icon} {percent}%",
         "format-icons": ["", "", "", ""],
-		// Commands to execute on events
         "on-click": "",
         "on-click-middle": "",
         "on-click-right": "",

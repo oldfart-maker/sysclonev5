@@ -438,5 +438,4 @@ window#waybar.empty #window {
 // waybar-wlr-workspaces
 '';
   
-} # end JSON
-} # end module
+}

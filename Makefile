@@ -90,13 +90,82 @@ img-unpack: img-download  ## Decompress .xz into a raw .img (once)
 	  xz -dkc "$(IMG_XZ)" > "$(IMG_RAW)"; \
 	else echo "[xz] cached: $(IMG_RAW)"; fi
 
+# ---- SD write tuning (defaults to “gentle”) ---------------------------------
+SD_GENTLE ?= 1            # 1 = gentle, 0 = fast
+SD_SYSTEMD ?= 1           # 1 = wrap in systemd-run scope (cgroup throttling), 0 = off
+
+# Base options (apply in both modes)
+SD_BS    ?= 1M            # 1M + fullblock smooths throughput
+SD_CONV  ?=               # keep empty; fsync not needed w/ oflag=direct
+SD_OFLAG ?= direct        # bypass page cache for smoother I/O
+SD_IFLAG ?= fullblock
+
+# systemd-run throttles (effective when SD_SYSTEMD=1)
+SD_IO_MAX     ?= 5M       # per-device I/O cap (read+write)
+SD_CPU_QUOTA  ?= 20%      # cap CPU for the pipeline
+SD_IOWEIGHT   ?= 1
+SD_CPUWEIGHT  ?= 1
+SD_NICE_SCOPE ?= 19       # nice level applied to the scope
+
+# Priority/throughput defaults depend on SD_GENTLE
+ifeq ($(strip $(SD_GENTLE)),1)
+  # Gentle: de-prioritize. If systemd throttling is ON, skip pv cap (kernel cap is stronger).
+  ifeq ($(strip $(SD_SYSTEMD)),1)
+    SD_RATE_MB ?=
+  else
+    SD_RATE_MB ?= 8
+  endif
+  SD_IONICE  ?= ionice -c3
+  SD_NICE    ?= nice -n 19
+else
+  # Fast: no caps/priorities by default
+  SD_RATE_MB ?=
+  SD_IONICE  ?=
+  SD_NICE    ?=
+endif
+
+# --- Normalize SD_RATE_MB (remove any stray whitespace) ---
+empty:=
+space:=$(empty) $(empty)
+SD_RATE_MB := $(strip $(SD_RATE_MB))
+SD_RATE_MB_CLEAN := $(subst $(space),,$(SD_RATE_MB))
+
+# Choose pv when throttling, else cat
+ifeq ($(SD_RATE_MB_CLEAN),)
+  SD_SRC_CMD := cat
+else
+  SD_SRC_CMD := pv -L $(SD_RATE_MB_CLEAN)M
+endif
+
+# Build systemd-run wrapper (only when SD_SYSTEMD=1)
+ifeq ($(strip $(SD_SYSTEMD)),1)
+  SD_RUN = sudo systemd-run --scope \
+           -p IOWeight=$(SD_IOWEIGHT) \
+           -p CPUWeight=$(SD_CPUWEIGHT) \
+           -p "IOWriteBandwidthMax=$(DEVICE_EFFECTIVE) $(SD_IO_MAX)" \
+           -p "IOReadBandwidthMax=$(DEVICE_EFFECTIVE) $(SD_IO_MAX)" \
+           -p CPUQuota=$(SD_CPU_QUOTA) \
+           --nice=$(SD_NICE_SCOPE)
+else
+  SD_RUN =
+endif
+
 sd-write:  ## Write raw image to SD (DESTRUCTIVE) — pass DEVICE=/dev/sdX CONFIRM=yes
 	@[ -b "$(DEVICE_EFFECTIVE)" ] || { echo "[sd-write] ERROR: not a block device: $(DEVICE_EFFECTIVE)"; exit 1; }
 	@[ "$(CONFIRM)" = "yes" ] || { echo "Refusing: set CONFIRM=yes"; exit 2; }
-	@sudo dd if="$(IMG_RAW)" of="$(DEVICE_EFFECTIVE)" bs=4M status=progress conv=fsync
-	@mkdir -p .cache/sysclonev4 && echo "$(DEVICE_EFFECTIVE)" > .cache/sysclonev4/last-device
+	@# Read image (optionally rate-limited), then write under an optional systemd scope with low priority.
+	@$(SD_RUN) bash -lc 'set -Eeuo pipefail; \
+	  $(if $(SD_RATE_MB_CLEAN),$(SD_SRC_CMD) "$(IMG_RAW)" | ,cat "$(IMG_RAW)" | ) \
+	  $(SD_IONICE) $(SD_NICE) dd of="$(DEVICE_EFFECTIVE)" \
+	    bs=$(SD_BS) iflag=$(SD_IFLAG) $(if $(SD_OFLAG),oflag=$(SD_OFLAG),) \
+	    status=progress $(if $(SD_CONV),conv=$(SD_CONV),)'
+	@sync
 
+.PHONY: sd-write-fast
+sd-write-fast: ## Write SD at full speed (no throttling/priorities)
+	@$(MAKE) sd-write SD_GENTLE=0 SD_SYSTEMD=0
 
+# Convenience: unpack + write
 flash-all: img-unpack sd-write
 
 # Convenience: unpack + write + offline expand (re-uses existing targets/vars)

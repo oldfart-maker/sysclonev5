@@ -125,11 +125,29 @@ in
 
   # --- Waybar JSON config ---
   home.file."${cfgPath}".text = builtins.toJSON {
+<<<<<<< HEAD
     layer = "top";
     position = "top";
     height = 20;
     margin = "6 6 0 6";
     spacing = 8;
+=======
+// waybar-backlight
+    "backlight": {
+		"interval": 2,
+		"align": 0,
+		"rotate": 0,
+        "format": "{icon} {percent}%",
+        "format-icons": ["", "", "", ""],
+        "on-click": "",
+        "on-click-middle": "",
+        "on-click-right": "",
+        "on-update": "",
+        "on-scroll-up": "light -A 5%",
+        "on-scroll-down": "light -U 5%",
+        "smooth-scrolling-threshold": 1,
+    },
+>>>>>>> ce4948a (Overhauled waybar.)
 
     "modules-left"   = [ "cpu" "memory" ];
     "modules-center" = [ "clock" ];

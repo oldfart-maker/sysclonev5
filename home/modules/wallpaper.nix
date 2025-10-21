@@ -19,11 +19,12 @@ let
 
     # If no current selection, try to pick one from the wallpapers dir
     if [[ ! -e "$WALL" ]]; then
-      if compgen -G "${wallsDir}/*.{jpg,jpeg,png,webp}" > /dev/null; then
+      if compgen -G "${wallsDir}
+       /*.{jpg,jpeg,png,webp}" > /dev/null; then
         pick="$(find "${wallsDir}" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort | shuf -n1)"
         mkdir -p "${stateDir}"
         rm -f "${currentLink}"
-        ln -s "$pick" "${currentLink}"
+       n ln -s "$pick" "${currentLink}"
         WALL="${currentLink}"
       else
         # No images; succeed quietly (nothing to draw)
@@ -85,27 +86,5 @@ in
     pkgs.coreutils
     pkgs.gawk
   ];
-
-  # Service to apply current wallpaper at login
-  systemd.user.services.wallpaper = {
-    Unit = {
-      Description = "Apply current wallpaper with swaybg";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-Service = {
-  Type = "simple";
-  # Only run if in a Wayland session (Niri/Sway/etc.)
-  ExecCondition = [
-    "${pkgs.bash}/bin/bash"
-    "-lc"
-    "test -n \"$WAYLAND_DISPLAY\" -o -n \"$SWAYSOCK\""
-  ];
-  ExecStart = "${wallpaperApply}/bin/wallpaper-apply ${currentLink}";
-  Restart = "no";
-};
-
-    Install = { WantedBy = [ "graphical-session.target" ]; };
-  };
 
 }

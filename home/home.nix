@@ -11,6 +11,7 @@
     ./modules/hm-deploy.nix
     ./modules/rofi-colors-compat.nix
     ./modules/foot.nix
+    ./modules/wallpaper.nix
   ];
 
   home.username = "username";

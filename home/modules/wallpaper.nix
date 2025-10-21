@@ -1,3 +1,4 @@
+# modules/wallpaper.nix
 { config, pkgs, lib, ... }:
 let
   picturesDir   = "${config.home.homeDirectory}/Pictures";
@@ -7,46 +8,52 @@ let
   currentLink   = "${stateDir}/current";
   swaybgPidfile = "${stateDir}/swaybg.pid";
 
+  # Apply the selected wallpaper (from arg or ${currentLink})
   wallpaperApply = pkgs.writeShellScriptBin "wallpaper-apply" ''
     set -Eeuo pipefail
 
-    # If we're not in a Wayland/Niri session (e.g., SSH), do nothing but succeed.
+    # If WAYLAND_DISPLAY isn't set (e.g., ssh), try to detect it from sockets.
+    if [[ -z "''${WAYLAND_DISPLAY:-}" ]]; then
+      uid="$(id -u)"
+      sock="$(ls -1 /run/user/"$uid"/wayland-* 2>/dev/null | head -n1 || true)"
+      if [[ -S "$sock" ]]; then
+        export WAYLAND_DISPLAY="$(basename "$sock")"
+      fi
+    fi
+
+    # If still not in Wayland, just succeed quietly.
     if [[ -z "''${WAYLAND_DISPLAY:-}" && -z "''${SWAYSOCK:-}" ]]; then
       exit 0
     fi
 
     WALL="''\${1:-${currentLink}}"
-
-    # If no current selection, try to pick one from the wallpapers dir
+    # If no current, try to pick one once.
     if [[ ! -e "$WALL" ]]; then
-      if compgen -G "${wallsDir}
-       /*.{jpg,jpeg,png,webp}" > /dev/null; then
+      if compgen -G "${wallsDir}/*.{jpg,jpeg,png,webp}" > /dev/null; then
         pick="$(find "${wallsDir}" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort | shuf -n1)"
         mkdir -p "${stateDir}"
         rm -f "${currentLink}"
-       n ln -s "$pick" "${currentLink}"
+        ln -s "$pick" "${currentLink}"
         WALL="${currentLink}"
       else
-        # No images; succeed quietly (nothing to draw)
         exit 0
       fi
     fi
 
-    # Stop any swaybg we previously started
+    # Stop any previous swaybg we started
     if [[ -f "${swaybgPidfile}" ]] && kill -0 "$(cat ${swaybgPidfile})" 2>/dev/null; then
       kill "$(cat ${swaybgPidfile})" || true
       rm -f "${swaybgPidfile}"
     fi
 
-    # Start swaybg
+    # Launch swaybg
     setsid ${pkgs.swaybg}/bin/swaybg -m fill -i "$WALL" >/dev/null 2>&1 &
     echo $! > "${swaybgPidfile}"
   '';
 
+  # Pick a random wallpaper, store it as ${currentLink}, and (if Wayland) apply it
   wallpaperRandom = pkgs.writeShellScriptBin "wallpaper-random" ''
     set -Eeuo pipefail
-
-    # If not in Wayland, still select/record a new wallpaper so it persists for next GUI login.
     walls="${wallsDir}"
     mapfile -t files < <(find "$walls" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort)
     count="''\${#files[@]}"
@@ -67,10 +74,9 @@ let
       exit 0
     fi
   '';
-
 in
 {
-  # Ensure directories exist
+  # Ensure directories exist (idempotent)
   home.activation.createWallpaperDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     install -d -m 755 ${lib.escapeShellArg picturesDir} \
                        ${lib.escapeShellArg wallsDir} \
@@ -78,8 +84,9 @@ in
                        ${lib.escapeShellArg stateDir}
   '';
 
+  # Install the scripts + tools
   home.packages = [
-    wallpaperApply 
+    wallpaperApply
     wallpaperRandom
     pkgs.swaybg
     pkgs.findutils
@@ -87,4 +94,5 @@ in
     pkgs.gawk
   ];
 
+  # (Intentionally no systemd.user.services here)
 }

@@ -7,9 +7,9 @@ let
   currentLink   = "${stateDir}/current";
   swaybgPidfile = "${stateDir}/swaybg.pid";
 
-  wallpaper-apply = pkgs.writeShellScriptBin "wallpaper-apply" ''
+  wallpaperApply = pkgs.writeShellScriptBin "wallpaper-apply" ''
     set -Eeuo pipefail
-    WALL="${1:-${currentLink}}"
+    WALL="\${1:-${currentLink}}"
     test -e "$WALL" || { echo "No wallpaper found: $WALL" >&2; exit 1; }
 
     if [[ -f "${swaybgPidfile}" ]] && kill -0 "$(cat ${swaybgPidfile})" 2>/dev/null; then
@@ -21,7 +21,7 @@ let
     echo $! > "${swaybgPidfile}"
   '';
 
-  wallpaper-random = pkgs.writeShellScriptBin "wallpaper-random" ''
+  wallpaperRandom = pkgs.writeShellScriptBin "wallpaper-random" ''
     set -Eeuo pipefail
     walls="${wallsDir}"
     mapfile -t files < <(find "$walls" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort)
@@ -32,7 +32,7 @@ let
     rm -f "${currentLink}"
     ln -s "$pick" "${currentLink}"
 
-    exec ${wallpaper-apply}/bin/wallpaper-apply "${currentLink}"
+    exec ${wallpaperApply}/bin/wallpaper-apply "${currentLink}"
   '';
 in
 {

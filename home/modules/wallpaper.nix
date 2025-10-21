@@ -51,10 +51,9 @@ in
                        ${lib.escapeShellArg stateDir}
   '';
 
-  # Install the scripts and swaybg
   home.packages = [
-    wallpaper-apply
-    wallpaper-random
+    wallpaperApply 
+    wallpaperRandom
     pkgs.swaybg
     pkgs.findutils
     pkgs.coreutils

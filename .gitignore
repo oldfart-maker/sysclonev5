@@ -17,3 +17,6 @@ cache/
 
 # Emacs undo-tree
 *~undo-tree~
+# editor junk
+*~
+.#*

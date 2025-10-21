@@ -61,17 +61,18 @@ in
   ];
 
   # Service to apply current wallpaper at login
-  systemd.user.services.wallpaper = {
-    Unit = {
-      Description = "Apply current wallpaper with swaybg";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "simple";
-      ExecStart = "${wallpaper-apply}/bin/wallpaper-apply ${currentLink}";
-      Restart = "on-failure";
-    };
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+systemd.user.services.wallpaper = {
+  Unit = {
+    Description = "Apply current wallpaper with swaybg";
+    After = [ "graphical-session.target" ];
+    PartOf = [ "graphical-session.target" ];
   };
+  Service = {
+    Type = "simple";
+    ExecStart = "${wallpaperApply}/bin/wallpaper-apply ${currentLink}";
+    Restart = "on-failure";
+  };
+  Install = { WantedBy = [ "graphical-session.target" ]; };
+};
+
 }

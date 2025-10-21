@@ -87,9 +87,7 @@ in
  # Wallpaper is managed outside of the context of HM, so we need to re-apply
  # the wall paper after a switch.
 home.activation.reapplyWallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-  if [[ -n "$WAYLAND_DISPLAY" || -n "$SWAYSOCK" ]]; then
-    ${pkgs.bash}/bin/bash -lc "wallpaper-apply"
-  fi
+  ${pkgs.bash}/bin/bash -lc "wallpaper-apply" >/dev/null 2>&1 || true
 '';
 
   # Install the scripts + tools

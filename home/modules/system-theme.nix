@@ -4,7 +4,7 @@
   stylix = {
     enable = true;
   # image = "/home/username/Pictures/walls/gruv-rock.jpg";    
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/dracula.yaml";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml";
     polarity = "dark";
 
     fonts = {

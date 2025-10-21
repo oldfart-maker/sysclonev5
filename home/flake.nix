@@ -25,9 +25,9 @@
     homeConfigurations."username" = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
-        # Import Stylix’ Home Manager module
-        stylix.homeManagerModules.stylix
+                stylix.homeManagerModules.stylix
         ./home.nix
+        { home.packages = [ home-manager.packages.${system}.default ]; }
       ];
       # (Optional) Pass inputs to your modules if you want to reference them
       extraSpecialArgs = { inherit system; };

@@ -33,4 +33,7 @@ in
     bright6=${c.base0C}
     bright7=${c.base07}
   '';
+
+  force = true;
+  
 }

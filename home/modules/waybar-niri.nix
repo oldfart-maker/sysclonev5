@@ -95,16 +95,11 @@ in
     /* ---- per-module accents ---- */
     #clock      { color: @accent; }
     #network    { color: @blue; }
-    #battery    { color: @green; }
     #pulseaudio { color: @mauve; }
     #backlight  { color: @yellow; }
     #cpu        { color: @orange; }
     #memory     { color: @teal; }
     #tray       { color: @fg; }
-
-    /* battery states */
-    #battery.warning  { color: @yellow; }
-    #battery.critical { color: @red;    }
 
     /* pulseaudio muted state pop */
     #pulseaudio.muted {
@@ -133,7 +128,7 @@ in
 
     "modules-left"   = [ "cpu" "memory" ];
     "modules-center" = [ "clock" ];
-    "modules-right"  = [ "pulseaudio" "backlight" "network" "battery" "tray" ];
+    "modules-right"  = [ "pulseaudio" "backlight" "network" "tray" ];
 
     clock = {
       format = "{:%a %b %d  %H:%M}";
@@ -145,15 +140,6 @@ in
       format-wifi         = "  {essid} {signalStrength}%";
       format-ethernet     = "  {ifname}";
       format-disconnected = "󰤮  down";
-      tooltip = true;
-    };
-
-    battery = {
-      states = { warning = 20; critical = 10; };
-      format = "{icon}  {capacity}%";
-      format-charging = "󰂄  {capacity}%";
-      format-plugged  = "  {capacity}%";
-      format-icons = [ "󰁺" "󰁼" "󰁾" "󰂀" "󰂂" "󰁹" ];
       tooltip = true;
     };
 

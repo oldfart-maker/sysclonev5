@@ -1,70 +1,54 @@
 { config, pkgs, lib, ... }:
+
 let
-  emacsPkg   = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk);
-  repoDir    = "${config.home.homeDirectory}/projects/emacs_babel_config";
-  xdgBase    = "${config.home.homeDirectory}/.config";
-  emacsDir   = "${xdgBase}/emacs-prod";
-  modulesDir = "${emacsDir}/modules";
+  repoRoot    = "${config.home.homeDirectory}/projects/sysclonev5";
+  genEmacsDir = "${repoRoot}/generated/emacs";
+  genEarly    = "${genEmacsDir}/early-init.el";
+  genInit     = "${genEmacsDir}/init.el";
+  genModules  = "${genEmacsDir}/modules";
+
+  emacsDir    = "${config.xdg.configHome}/emacs-prod";
+
+  emacsPkg    = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk or pkgs.emacs);
 in
 {
-  # tools available on PATH
-  home.packages = [ emacsPkg pkgs.git pkgs.rsync ];
+  home.packages = [ emacsPkg ];
 
-  # shared assets anchor
-  xdg.configFile."emacs-common/.keep".text = "...";
-  
-  # ensure target dirs exist
-  home.activation.ensureEmacsDirs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    mkdir -p "${emacsDir}" "${modulesDir}" "${xdgBase}/emacs-common"
+  # Symlink the generated files/dir from your repo
+  home.file."${emacsDir}/early-init.el".source =
+    lib.file.mkOutOfStoreSymlink genEarly;
+
+  home.file."${emacsDir}/init.el".source =
+    lib.file.mkOutOfStoreSymlink genInit;
+
+  home.file."${emacsDir}/modules".source =
+    lib.file.mkOutOfStoreSymlink genModules;
+
+  # Friendly guard so you don’t forget to generate on the host
+  home.activation.emacsGeneratedCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    set -Eeuo pipefail
+    missing=0
+    [ -f "${genInit}" ]  || { echo "[emacs] ERROR: ${genInit} missing";  missing=1; }
+    [ -d "${genModules}" ] || { echo "[emacs] ERROR: ${genModules} missing"; missing=1; }
+    [ -f "${genEarly}" ] || echo "[emacs] NOTE: ${genEarly} missing (ok if you don't use it)"
+    if [ $missing -ne 0 ]; then
+      echo "[emacs] Run on host: tools/tangle-sync.sh --emacs && git push"
+      echo "[emacs] Then on this machine: hm-update"
+      exit 41
+    fi
   '';
 
-  # clone/pull + tangle + sync into ~/.config/emacs-prod
-  home.activation.emacsBabelTangle = lib.hm.dag.entryAfter [ "ensureEmacsDirs" ] ''
-    set -eu
-    mkdir -p "$HOME/projects"
-
-    if [ ! -d "${repoDir}/.git" ]; then
-      ${pkgs.git}/bin/git clone https://github.com/oldfart-maker/emacs_babel_config.git "${repoDir}"
-    else
-      ${pkgs.git}/bin/git -C "${repoDir}" fetch --all
-      ${pkgs.git}/bin/git -C "${repoDir}" pull --ff-only
-    fi
-
-    PATH="${pkgs.git}/bin:$PATH" \
-    ${emacsPkg}/bin/emacs --batch -Q -l org \
-    --eval "(setq org-confirm-babel-evaluate nil)" \
-    --eval "(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)))" \
-    --eval "(add-to-list 'exec-path \"${pkgs.git}/bin\")" \
-    --eval "(setenv \"PATH\" (concat \"${pkgs.git}/bin:\" (getenv \"PATH\")))" \
-    --eval "(require 'ob-tangle)" \
-    --eval "(org-babel-tangle-file (expand-file-name \"emacs_config.org\" \"${repoDir}\"))"
-
-    if [ -f "${repoDir}/init.el" ]; then
-      install -m0644 "${repoDir}/init.el" "${emacsDir}/init.el"
-    fi
-    if [ -f "${repoDir}/early-init.el" ]; then
-      install -m0644 "${repoDir}/early-init.el" "${emacsDir}/early-init.el"
-    fi
-    if [ -d "${repoDir}/modules" ]; then
-      ${pkgs.rsync}/bin/rsync -a --delete "${repoDir}/modules/" "${modulesDir}/"
-    fi
-    
-    # All good → create readiness stamp for the systemd unit
-    touch "${emacsDir}/.ready"
-  '';
-
-systemd.user.services."emacs-prod" = {
-  Unit = {
-    Description = "Emacs daemon (emacs-prod)";
-    After = [ "graphical-session.target" ];
-    PartOf = [ "graphical-session.target" ];
+  systemd.user.services."emacs-prod" = {
+    Unit = {
+      Description = "Emacs daemon (emacs-prod)";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod --init-directory=%h/.config/emacs-prod";
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "default.target" ];
   };
-  Service = {
-    Type = "simple";
-    ExecStart = "${emacsPkg}/bin/emacs --fg-daemon=emacs-prod --init-directory=%h/.config/emacs-prod";
-    Restart = "on-failure";
-  };
-  Install.WantedBy = [ "default.target" ];
-};
-
 }

@@ -4,9 +4,10 @@
 let
   repoRoot   = "${config.home.homeDirectory}/projects/sysclonev5";
   genNiriDir = "${repoRoot}/generated/niri";
-  cfgSrc     = "${genNiriDir}/config.kdl";
-  keysSrc    = "${genNiriDir}/key_bindings.txt";
+  cfgSrc     = ../../generated/niri/config.kdl;
+  keysSrc    = "${repoRoot}/generated/niri/key_bindings.txt";  
   niriDir    = "${config.xdg.configHome}/niri";
+
 in
 {
   # write the exact bytes from your repo into the target file

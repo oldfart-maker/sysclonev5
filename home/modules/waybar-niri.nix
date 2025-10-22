@@ -54,361 +54,120 @@ in
   home.file."${cssPath}".text = ''
     @import url("colors.css");
 
-* {
-    font-family: "JetBrains Mono", "Symbols Nerd Font", Iosevka, archcraft, sans-serif;
-    font-size: 10px;
-}
+    /* ---- global ---- */
+    * {
+      font-family: "JetBrains Mono", "Symbols Nerd Font", "Noto Color Emoji", monospace, sans-serif;
+      font-size: 12pt;
+      color: @fg;
+    }
 
-window#waybar {
-    background-color: @background;
-    color: @background;
-    border-bottom: 2px solid @background-alt;
-    transition-property: background-color;
-    transition-duration: .5s;
-}
+    window#waybar {
+      background: alpha(@bg, 0.92);   /* subtle transparency */
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 8px 24px alpha(@fg, 0.06);
+    }
 
-window#waybar.hidden {
-    opacity: 0.5;
-}
+    /* block groups */
+    .modules-left,
+    .modules-center,
+    .modules-right {
+      margin: 0 6px;
+    }
 
-window#waybar.empty {
-}
+    /* ---- module "pill" look ---- */
+    .module {
+      padding: 4px 12px;
+      margin: 0 6px;
+      border-radius: 10px;
+      background: alpha(@bg_alt, 0.9);
+    }
 
-window#waybar.solo {
-}
+    .module:hover { background: alpha(@bg_alt2, 0.9); }
 
-#backlight {
-	background-image: linear-gradient(to right, @green , @magenta);
-}
+    /* separators (optional) */
+    /*
+    .module + .module {
+      border-left: 1px solid alpha(@fg, 0.08);
+    }
+    */
 
-#clock {
-	background-image: linear-gradient(to right, @red , @blue);
-}
+    /* ---- per-module accents ---- */
+    #clock      { color: @accent; }
+    #network    { color: @blue; }
+    #battery    { color: @green; }
+    #pulseaudio { color: @mauve; }
+    #backlight  { color: @yellow; }
+    #cpu        { color: @orange; }
+    #memory     { color: @teal; }
+    #tray       { color: @fg; }
 
-#workspaces {
-	background-color: @background-alt;
-	color: @foreground;
-	border-radius: 0px 12px 0px 0px;
-	padding: 4px;
-}
+    /* battery states */
+    #battery.warning  { color: @yellow; }
+    #battery.critical { color: @red;    }
 
-#workspaces button {
-	color: @foreground;
-	margin: 0px 2px;
-	padding: 2px 6px;
-}
+    /* pulseaudio muted state pop */
+    #pulseaudio.muted {
+      color: @red;
+      background: alpha(@red, 0.10);
+    }
 
-#workspaces button:hover {
-	background-color: @background;
-	color: @white;
-	border: 0px solid @background;
-	border-radius: 12px;
-	padding: 2px 6px;
-}
+    /* network disconnected */
+    #network.disconnected {
+      color: @orange;
+      background: alpha(@orange, 0.10);
+    }
 
-#workspaces button.visible {
-	background-image: linear-gradient(to right, @blue , @green);
-}
+    /* tray cleanup */
+    #tray { padding-right: 8px; }
+    #tray > * { margin: 0 4px; }
+  '';
 
-#workspaces button.focused {
-	background-image: linear-gradient(to right, @red , @magenta);
-}
-
-#workspaces button.urgent {
-	background-image: linear-gradient(to right, @red , @yellow);
-}
-
-#workspaces button.persistent {
-	background-image: linear-gradient(to right, @yellow , @magenta);
-}
-
-#workspaces button.visible,
-#workspaces button.focused,
-#workspaces button.urgent,
-#workspaces button.persistent {
-	color: @background;
-	border-radius: 12px;
-	padding: 2px 6px;
-}
-
-#workspaces button.current_output {
-}
-
-#workspaces button#sway-workspace-1 {
-}
-
-.modules-left > widget:first-child > #workspaces {
-    margin-left: 0;
-}
-
-.modules-right > widget:last-child > #workspaces {
-    margin-right: 0;
-}
-
-#mode {
-	background-color: @magenta;
-	font-weight: bold;
-}
-
-#window {
-	background-color: @background-alt;
-	color: @white;
-}
-window#waybar.empty #window {
-	background-color: transparent;
-}
-
-#tray {
-	background-color: @background-alt;
-	border-radius: 12px 0px 0px 0px;
-	padding: 4px 6px;
-}
-
-#tray > .passive {
-    -gtk-icon-effect: dim;
-}
-
-#tray > .needs-attention {
-    -gtk-icon-effect: highlight;
-}
-
-#tray > .active {
-}
-
-@keyframes gradient {
-	0% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-	100% {
-		background-position: 0% 50%;
-	}
-}
-
-#mpd {
-	background-color: @background-alt;
-	color: @white;
-}
-
-#mpd.disconnected {
-	background-color: @red;
-	color: @white;
-}
-
-#mpd.stopped {
-	background-image: linear-gradient(to right, @red , @yellow);
-	color: @background;
-}
-
-#mpd.playing {
-    background: linear-gradient(90deg, @blue 25%, @cyan 50%, @magenta 100%); 
-    background-size: 300% 300%;
-    animation: gradient 10s ease infinite;
-	color: @background;
-}
-
-#mpd.paused {
-}
-
-#idle_inhibitor {
-	background-image: linear-gradient(to right, @magenta, @yellow);
-}
-#idle_inhibitor.deactivated {
-	background-image: linear-gradient(to right, @red , @yellow);
-}
-
-#pulseaudio {
-	background-image: linear-gradient(to right, @blue , @green);
-}
-
-#pulseaudio.bluetooth {
-	background-image: linear-gradient(to right, @green , @yellow);
-}
-#pulseaudio.muted {
-	background-image: linear-gradient(to right, @red , @yellow);
-}
-
-#network {
-	background-image: linear-gradient(to right, @magenta , @cyan);
-}
-
-#network.disconnected {
-	background-image: linear-gradient(to right, @red , @yellow);
-}
-
-#network.disabled {
-	background-image: linear-gradient(to right, @red , @red);
-	color: @white;
-}
-
-#network.linked {
-}
-
-#network.ethernet {
-}
-
-#network.wifi {
-}
-
-#bluetooth {
-	background-image: linear-gradient(to right, @yellow , @blue);
-}
-
-#bluetooth.disabled{
-	background-image: linear-gradient(to right, @red , @red);
-	color: @white;
-}
-
-#bluetooth.off{
-	background-image: linear-gradient(to right, @red , @yellow);
-}
-
-#bluetooth.on{
-}
-
-#bluetooth.connected{
-}
-
-#bluetooth.discoverable{
-}
-
-#bluetooth.discovering{
-}
-
-#bluetooth.pairable{
-}
-
-/** Common style **/
-#backlight, 
-#battery,
-#clock,
-#idle_inhibitor,
-#mode,
-#window,
-#mpd,
-#pulseaudio,
-#network,
-#bluetooth {
- }
-
-/* END OF CSS */
-'';
-  
   # --- Waybar JSON config ---
-home.file."/home/username/.config/niri/waybar/config".text = builtins.toJSON {
-  # backlight
-  "backlight" = {
-    "interval" = 2;
-    "align" = 0;
-    "rotate" = 0;
-    "format" = "{icon} {percent}%";
-    "format-icons" = [ "" "" "" "" ];
-    "on-click" = "";
-    "on-click-middle" = "";
-    "on-click-right" = "";
-    "on-update" = "";
-    "on-scroll-up" = "light -A 5%";
-    "on-scroll-down" = "light -U 5%";
-    "smooth-scrolling-threshold" = 1;
-  };
+  home.file."${cfgPath}".text = builtins.toJSON {
+    layer = "top";
+    position = "top";
+    height = 28;
+    margin = "6 6 0 6";
+    spacing = 8;
 
-  # bluetooth
-  "bluetooth" = {
-    "format" = " {status}";
-    "format-on" = " {status}";
-    "format-off" = " {status}";
-    "format-disabled" = " {status}";
-    "format-connected" = " {device_alias}";
-    "format-connected-battery" = " {device_alias}, {device_battery_percentage}%";
-    "tooltip" = true;
-    "tooltip-format" = "{controller_alias}\t{controller_address}";
-    "tooltip-format-connected" = "{controller_alias}\t{controller_address}\n\n{device_enumerate}";
-    "tooltip-format-enumerate-connected" = "{device_alias}\t{device_address}";
-  };
+    "modules-left"   = [ "cpu" "memory" ];
+    "modules-center" = [ "clock" ];
+    "modules-right"  = [ "pulseaudio" "backlight" "network" "battery" "tray" ];
 
-  # clock
-  "clock" = {
-    "interval" = 60;
-    "align" = 0;
-    "rotate" = 0;
-    "tooltip-format" = "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>";
-    "format" = " {:%I:%M %p}";
-    "format-alt" = " {:%a %b %d, %G}";
-  };
-
-  # idle inhibitor
-  "idle_inhibitor" = {
-    "format" = "{icon}";
-    "format-icons" = {
-      "activated" = "";
-      "deactivated" = "";
+    clock = {
+      format = "{:%a %b %d  %H:%M}";
+      tooltip = true;
+      tooltip-format = "{:%A, %B %d, %Y}";
     };
-    "timeout" = 30;
-  };
 
-  # mpd
-  "mpd" = {
-    "interval" = 2;
-    "unknown-tag" = "N/A";
-    "format" = "{artist} - {title} {stateIcon}";
-    "format-disconnected" = " Disconnected";
-    "format-paused" = "{artist} - {title} {stateIcon}";
-    "format-stopped" = "Stopped ";
-    "state-icons" = { "paused" = ""; "playing" = ""; };
-    "tooltip-format" = "MPD (connected)";
-    "tooltip-format-disconnected" = "MPD (disconnected)";
-    "on-click" = "mpc toggle";
-    "on-click-right" = "mpc next";
-    "on-update" = "";
-    "on-scroll-up" = "volume --inc";
-    "on-scroll-down" = "volume --dec";
-    "smooth-scrolling-threshold" = 1;
-  };
-
-  # network
-  "network" = {
-    "interval" = 5;
-    # "interface" = "wlan*";
-    "format-wifi" = " {essid}";
-    "format-ethernet" = " {ipaddr}/{cidr}";
-    "format-linked" = " {ifname} (No IP)";
-    "format-disconnected" = "睊 Disconnected";
-    "format-disabled" = "睊 Disabled";
-    "format-alt" = " {bandwidthUpBits} |  {bandwidthDownBits}";
-    "tooltip-format" = " {ifname} via {gwaddr}";
-  };
-
-  # pulseaudio
-  "pulseaudio" = {
-    "format" = "{icon} {volume}% {format_source}";
-    "format-muted" = " Mute";
-    "format-bluetooth" = " {volume}% {format_source}";
-    "format-bluetooth-muted" = " Mute";
-    "format-source" = " {volume}%";
-    "format-source-muted" = " Mute";
-    "format-icons" = {
-      "headphone" = "";
-      "hands-free" = "";
-      "headset" = "";
-      "phone" = "";
-      "portable" = "";
-      "car" = "";
-      "default" = [ "" "" "" ];
+    network = {
+      format-wifi         = "  {essid} {signalStrength}%";
+      format-ethernet     = "  {ifname}";
+      format-disconnected = "󰤮  down";
+      tooltip = true;
     };
-    "scroll-step" = 5.0;
-    "on-click" = "pulsemixer --toggle-mute";
-    "on-click-right" = "pulsemixer --toggle-mute";
-    "smooth-scrolling-threshold" = 1;
+
+    battery = {
+      states = { warning = 20; critical = 10; };
+      format = "{icon}  {capacity}%";
+      format-charging = "󰂄  {capacity}%";
+      format-plugged  = "  {capacity}%";
+      format-icons = [ "󰁺" "󰁼" "󰁾" "󰂀" "󰂂" "󰁹" ];
+      tooltip = true;
+    };
+
+    pulseaudio = {
+      scroll-step = 1;
+      format = "{icon}  {volume}%";
+      format-muted = "󰝟  mute";
+      format-icons = { default = [ "󰕿" "󰖀" "󰕾" ]; headphone = "󰋋"; };
+      on-click = "pavucontrol || true";
+    };
+
+    backlight = { format = "󰖨  {percent}%"; };
+    cpu      = { interval = 3; format = "  {usage}%"; tooltip = false; };
+    memory   = { interval = 5; format = "  {used:0.1f}G"; tooltip = false; };
+    tray     = { spacing = 8; };
   };
-
-  # niri modules
-  "niri/window" = { "format" = "{}"; };
-  "niri/workspaces" = { "format" = "{value}"; };
-
-  # tray
-  "tray" = { "icon-size" = 16; "spacing" = 10; };
-};
-
-}  # ← CLOSE the top-level module
+}

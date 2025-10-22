@@ -16,13 +16,13 @@ in
 
   # Symlink the generated files/dir from your repo
   home.file."${emacsDir}/early-init.el".source =
-    lib.file.mkOutOfStoreSymlink genEarly;
+    config.lib.file.mkOutOfStoreSymlink genEarly;
 
   home.file."${emacsDir}/init.el".source =
-    lib.file.mkOutOfStoreSymlink genInit;
+    config.lib.file.mkOutOfStoreSymlink genInit;
 
   home.file."${emacsDir}/modules".source =
-    lib.file.mkOutOfStoreSymlink genModules;
+    config.lib.file.mkOutOfStoreSymlink genModules;
 
   # Friendly guard so you don’t forget to generate on the host
   home.activation.emacsGeneratedCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

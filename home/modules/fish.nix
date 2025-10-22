@@ -6,11 +6,11 @@ in {
   programs.fish.enable = true;
   home.packages = [ pkgs.fish ];
 
-  # Bake contents (rollback-safe):
-  home.file.".config/fish/config.fish".text = builtins.readFile (dot "fish/config.fish");
-  home.file.".config/fish/conf.d".source =
-    lib.file.mkOutOfStoreSymlink (dot "fish/conf.d"); # directory: symlink is fine
+  home.file.".config/fish/config.fish".source =
+    config.lib.file.mkOutOfStoreSymlink (df "fish/config.fish");
 
-  # If you prefer all symlinks instead:
-  # home.file.".config/fish/config.fish".source = lib.file.mkOutOfStoreSymlink (dot "fish/config.fish");
+  home.file.".config/fish/functions" = lib.mkIf hasFuncs {
+    source = config.lib.file.mkOutOfStoreSymlink (df "fish/functions");
+};
+
 }

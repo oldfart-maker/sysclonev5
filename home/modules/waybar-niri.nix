@@ -290,145 +290,125 @@ window#waybar.empty #window {
 #mpd,
 #pulseaudio,
 #network,
-#bluetooth
-'';
+#bluetooth {
  }
 
+/* END OF CSS */
+'';
+  
   # --- Waybar JSON config ---
-  home.file."${cfgPath}".text = builtins.toJSON {
+home.file."/home/username/.config/niri/waybar/config".text = builtins.toJSON {
+  # backlight
+  "backlight" = {
+    "interval" = 2;
+    "align" = 0;
+    "rotate" = 0;
+    "format" = "{icon} {percent}%";
+    "format-icons" = [ "" "" "" "" ];
+    "on-click" = "";
+    "on-click-middle" = "";
+    "on-click-right" = "";
+    "on-update" = "";
+    "on-scroll-up" = "light -A 5%";
+    "on-scroll-down" = "light -U 5%";
+    "smooth-scrolling-threshold" = 1;
+  };
 
-    "backlight": {
-		"interval": 2,
-		"align": 0,
-		"rotate": 0,
-        "format": "{icon} {percent}%",
-        "format-icons": ["", "", "", ""],
-        "on-click": "",
-        "on-click-middle": "",
-        "on-click-right": "",
-        "on-update": "",
-        "on-scroll-up": "light -A 5%",
-        "on-scroll-down": "light -U 5%",
-        "smooth-scrolling-threshold": 1,
-    },
+  # bluetooth
+  "bluetooth" = {
+    "format" = " {status}";
+    "format-on" = " {status}";
+    "format-off" = " {status}";
+    "format-disabled" = " {status}";
+    "format-connected" = " {device_alias}";
+    "format-connected-battery" = " {device_alias}, {device_battery_percentage}%";
+    "tooltip" = true;
+    "tooltip-format" = "{controller_alias}\t{controller_address}";
+    "tooltip-format-connected" = "{controller_alias}\t{controller_address}\n\n{device_enumerate}";
+    "tooltip-format-enumerate-connected" = "{device_alias}\t{device_address}";
+  };
 
-    "bluetooth": {
-        "format": " {status}",
-        "format-on": " {status}",
-        "format-off": " {status}",
-        "format-disabled": " {status}",
-        "format-connected": " {device_alias}",
-        "format-connected-battery": " {device_alias}, {device_battery_percentage}%",
-        "tooltip": true,
-        "tooltip-format": "{controller_alias}\t{controller_address}",
-        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
-        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-    },
+  # clock
+  "clock" = {
+    "interval" = 60;
+    "align" = 0;
+    "rotate" = 0;
+    "tooltip-format" = "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>";
+    "format" = " {:%I:%M %p}";
+    "format-alt" = " {:%a %b %d, %G}";
+  };
 
-  "clock": {
-	"interval": 60,
-	"align": 0,
-	"rotate": 0,
-        "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
-        "format": " {:%I:%M %p}",
-        "format-alt": " {:%a %b %d, %G}"
-    },
+  # idle inhibitor
+  "idle_inhibitor" = {
+    "format" = "{icon}";
+    "format-icons" = {
+      "activated" = "";
+      "deactivated" = "";
+    };
+    "timeout" = 30;
+  };
 
-# waybar-cpu
+  # mpd
+  "mpd" = {
+    "interval" = 2;
+    "unknown-tag" = "N/A";
+    "format" = "{artist} - {title} {stateIcon}";
+    "format-disconnected" = " Disconnected";
+    "format-paused" = "{artist} - {title} {stateIcon}";
+    "format-stopped" = "Stopped ";
+    "state-icons" = { "paused" = ""; "playing" = ""; };
+    "tooltip-format" = "MPD (connected)";
+    "tooltip-format-disconnected" = "MPD (disconnected)";
+    "on-click" = "mpc toggle";
+    "on-click-right" = "mpc next";
+    "on-update" = "";
+    "on-scroll-up" = "volume --inc";
+    "on-scroll-down" = "volume --dec";
+    "smooth-scrolling-threshold" = 1;
+  };
 
-# waybar-disk
+  # network
+  "network" = {
+    "interval" = 5;
+    # "interface" = "wlan*";
+    "format-wifi" = " {essid}";
+    "format-ethernet" = " {ipaddr}/{cidr}";
+    "format-linked" = " {ifname} (No IP)";
+    "format-disconnected" = "睊 Disconnected";
+    "format-disabled" = "睊 Disabled";
+    "format-alt" = " {bandwidthUpBits} |  {bandwidthDownBits}";
+    "tooltip-format" = " {ifname} via {gwaddr}";
+  };
 
-    "idle_inhibitor": {
-         "format": "{icon}",
-         "format-icons": {
-             "activated": "",
-             "deactivated": ""
-         },
-         "timeout": 30
-    },
+  # pulseaudio
+  "pulseaudio" = {
+    "format" = "{icon} {volume}% {format_source}";
+    "format-muted" = " Mute";
+    "format-bluetooth" = " {volume}% {format_source}";
+    "format-bluetooth-muted" = " Mute";
+    "format-source" = " {volume}%";
+    "format-source-muted" = " Mute";
+    "format-icons" = {
+      "headphone" = "";
+      "hands-free" = "";
+      "headset" = "";
+      "phone" = "";
+      "portable" = "";
+      "car" = "";
+      "default" = [ "" "" "" ];
+    };
+    "scroll-step" = 5.0;
+    "on-click" = "pulsemixer --toggle-mute";
+    "on-click-right" = "pulsemixer --toggle-mute";
+    "smooth-scrolling-threshold" = 1;
+  };
 
-# waybar-inhibitor
-# waybar-keyboard-state
-# waybar-memory
+  # niri modules
+  "niri/window" = { "format" = "{}"; };
+  "niri/workspaces" = { "format" = "{value}"; };
 
-    "mpd": {
-        "interval": 2,
-        "unknown-tag": "N/A",
+  # tray
+  "tray" = { "icon-size" = 16; "spacing" = 10; };
+};
 
-        "format": "{artist} - {title} {stateIcon}",
-        "format-disconnected": " Disconnected",
-        "format-paused": "{artist} - {title} {stateIcon}",
-        "format-stopped": "Stopped ",
-        "state-icons": {
-            "paused": "",
-            "playing": ""
-        },
-        "tooltip-format": "MPD (connected)",
-        "tooltip-format-disconnected": "MPD (disconnected)",
-        "on-click": "mpc toggle",
-        "on-click-right": "mpc next",
-        "on-update": "",
-        "on-scroll-up": "volume --inc",
-        "on-scroll-down": "volume --dec",
-        "smooth-scrolling-threshold": 1,
-    },
-
-    "network": {
-		"interval": 5,
-        //"interface": "wlan*", // (Optional) To force the use of this interface, set it for netspeed to work
-        "format-wifi": " {essid}",
-        "format-ethernet": " {ipaddr}/{cidr}",
-        "format-linked": " {ifname} (No IP)",
-        "format-disconnected": "睊 Disconnected",
-        "format-disabled": "睊 Disabled",
-        "format-alt": " {bandwidthUpBits} |  {bandwidthDownBits}",
-        "tooltip-format": " {ifname} via {gwaddr}",
-    },
-
-    "pulseaudio": {
-        //"format": "{volume}% {icon} {format_source}",
-        "format": "{icon} {volume}% {format_source}",
-        "format-muted": " Mute",
-        "format-bluetooth": " {volume}% {format_source}",
-        "format-bluetooth-muted": " Mute",
-        "format-source": " {volume}%",
-        "format-source-muted": " Mute",
-        "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
-        },
-        "scroll-step": 5.0,
-        "on-click": "pulsemixer --toggle-mute",
-        "on-click-right": "pulsemixer --toggle-mute",
-        "smooth-scrolling-threshold": 1,
-    },
-
-# waybar-sndio
-# waybar-states
-
- waybar-niri-window
-    "niri/window": {
-    	"format": "{}",
-    },
-
-"niri/workspaces": {
-	"format": "{value}",
-},
-
-# waybar-temperature
-
-    "tray": {
-        "icon-size": 16,
-        "spacing": 10
-    },
-
-# waybar-wlr-taskbar
-# waybar-wlr-workspaces
-'';
- }
-}
+}  # ← CLOSE the top-level module

@@ -5,7 +5,7 @@ let
   c = config.lib.stylix.colors;           # base00..base0F without '#'
 in
 {
-  home.file.".config/foot/foot.ini".text = ''
+  home.file.".config/niri/foot/foot.ini".text = ''
     [main]
     font=JetBrains Mono:size=11
     font-bold=JetBrains Mono:style=Bold:size=11

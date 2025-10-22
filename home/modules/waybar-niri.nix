@@ -116,6 +116,28 @@ in
     /* tray cleanup */
     #tray { padding-right: 8px; }
     #tray > * { margin: 0 4px; }
+
+    /* --- workspaces --- */
+    #workspaces {
+      padding: 0 6px;
+    }
+
+    #workspaces button {
+      padding: 2px 8px;
+      margin: 0 4px;
+      border-radius: 8px;
+      background: alpha(@bg_alt, 0.8);
+    }
+
+    #workspaces button.focused {
+      color: @accent;
+      background: alpha(@accent, 0.12);
+    }
+
+    #workspaces button.active { background: alpha(@blue, 0.10); }
+    #workspaces button.urgent { background: alpha(@red, 0.12); }
+    #workspaces button.empty  { opacity: .55; }
+
   '';
 
   # --- Waybar JSON config ---
@@ -126,9 +148,30 @@ in
     margin = "6 6 0 6";
     spacing = 8;
 
-    "modules-left"   = [ "cpu" "memory" ];
+    # add workspaces to the left group (put it first if you want it leading)
+    "modules-left"   = [ "niri/workspaces" "cpu" "memory" ];
     "modules-center" = [ "clock" ];
     "modules-right"  = [ "pulseaudio" "backlight" "network" "tray" ];
+
+    # NEW: niri workspaces module
+    "niri/workspaces" = {
+      # show an icon per workspace; click switches workspaces
+      format = "{icon}";
+      "format-icons" = {
+        # state-based icons
+        active  = "";
+        default = "";
+        urgent  = "";
+        empty   = "";
+        # (optional) name/index matches also supported if you name workspaces in niri
+        # "browser" = "";
+        # "chat"    = "";
+      };
+      # show all workspaces on every output (set to false to only show for that monitor)
+      "all-outputs" = true;
+      "disable-click" = false;
+      # "expand" = false;  # set true if you want it to stretch
+    };
 
     clock = {
       format = "{:%a %b %d  %H:%M}";

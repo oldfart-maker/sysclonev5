@@ -2,7 +2,7 @@
 
 let
   repoRoot = "${config.home.homeDirectory}/projects/sysclonev5";
-  df       = name: "${repoRoot}/dotfiles/${name}";
+  df       = name: "${repoRoot}/home/dotfiles/${name}";
 
   hasFuncs = builtins.pathExists (df "fish/functions");
   hasConf  = builtins.pathExists (df "fish/config.fish");

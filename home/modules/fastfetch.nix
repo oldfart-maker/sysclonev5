@@ -2,8 +2,8 @@
 
 let
   repoRoot = "${config.home.homeDirectory}/projects/sysclonev5";
-  cfgPath  = "${repoRoot}/dotfiles/fastfetch/config.jsonc";
-  logoPath = "${repoRoot}/dotfiles/fastfetch/logo";  # file or dir; optional
+  cfgPath  = "${repoRoot}/home/dotfiles/fastfetch/config.jsonc";
+  logoPath = "${repoRoot}/home/dotfiles/fastfetch/logo";  # file or dir; optional
 
   hasLogo  = builtins.pathExists logoPath;
 in {
@@ -22,7 +22,7 @@ in {
   home.activation.fastfetchCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ ! -f "${cfgPath}" ]; then
       echo "[fastfetch] ERROR: ${cfgPath} is missing."
-      echo "[fastfetch] Copy it into dotfiles/fastfetch/, commit, push, then run hm-update."
+      echo "[fastfetch] Copy it into home/dotfiles/fastfetch/, commit, push, then run hm-update."
       exit 42
     fi
   '';

@@ -2,8 +2,8 @@
 { config, lib, ... }:
 
 let
-  cfgPath  = ../../generated/niri/config.kdl;
-  keysPath = ../../generated/niri/key_bindings.txt;
+  cfgPath  = ../generated/niri/config.kdl;
+  keysPath = ../generated/niri/key_bindings.txt;
   niriDir  = "${config.xdg.configHome}/niri";
 in
 {

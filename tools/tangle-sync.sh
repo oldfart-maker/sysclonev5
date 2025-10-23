@@ -173,14 +173,14 @@ if $want_emacs; then
 fi
 
 # --- Commit if changed ---------------------------------------------------
-log "sysclonev5: commit if generated/ changed"
+log "sysclonev5: commit if home/generated/ changed"
 pushd "$SYSCLONE_REPO" >/dev/null
 if ! git diff --quiet -- generated; then
   git add generated
   git commit -m "tangle-sync: update generated configs"
   echo "Committed. Push with: git -C \"$SYSCLONE_REPO\" push"
 else
-  echo "No changes in generated/; nothing to commit."
+  echo "No changes in home/generated/; nothing to commit."
 fi
 popd >/dev/null
 

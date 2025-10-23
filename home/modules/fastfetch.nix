@@ -3,18 +3,17 @@
 let
   repoRoot = "${config.home.homeDirectory}/projects/sysclonev5";
   cfgPath  = "${repoRoot}/home/dotfiles/fastfetch/config.jsonc";
-  logoPath = "${repoRoot}/home/dotfiles/fastfetch/logo";  # file or dir; optional
-
+  logoPath = "${repoRoot}/home/dotfiles/fastfetch/logo";
   hasLogo  = builtins.pathExists logoPath;
 in {
   home.packages = [ pkgs.fastfetch ];
 
   # Symlink the config from your repo working tree
-  xdg.configFile."home/fastfetch/config.jsonc".source =
+  xdg.configFile."fastfetch/config.jsonc".source =
     config.lib.file.mkOutOfStoreSymlink cfgPath;
 
   # (Optional) if you keep a custom logo alongside the config
-  xdg.configFile."home/fastfetch/logo" = lib.mkIf hasLogo {
+  xdg.configFile."fastfetch/logo" = lib.mkIf hasLogo {
     source = config.lib.file.mkOutOfStoreSymlink logoPath;
   };
 

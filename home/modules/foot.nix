@@ -1,12 +1,14 @@
 { config, pkgs, lib, ... }:
 
 let
-  c = config.lib.stylix.colors;
+  # Stylix may be disabled during refactors—fall back safely if so:
+  c = (config.lib.stylix.colors or {
+    base00 = "#000000"; base03 = "#333333"; base05 = "#d0d0d0"; base07 = "#ffffff";
+    base08 = "#ff5f5f"; base0A = "#ffd75f"; base0B = "#87d787"; base0C = "#5fd7d7";
+    base0D = "#5f87ff"; base0E = "#af5fff";
+  });
 in
 {
-  xdg.enable = true;
-
-  # writes ~/.config/niri/foot/foot.ini, overwriting any existing file
   xdg.configFile."niri/foot/foot.ini" = {
     text = ''
       [main]
@@ -36,6 +38,6 @@ in
       bright6=${c.base0C}
       bright7=${c.base07}
     '';
-    force = true;
+    force = true;   # overwrite any preexisting file once
   };
 }

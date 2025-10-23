@@ -130,8 +130,8 @@ ensure_repo "$SYSCLONE_REPO"
 $want_niri  && ensure_repo "$NIRI_SRC_DIR"  "$NIRI_GIT"
 $want_emacs && ensure_repo "$EMACS_SRC_DIR" "$EMACS_GIT"
 
-mkdir -p "$SYSCLONE_REPO/generated/niri" \
-         "$SYSCLONE_REPO/generated/emacs/modules"
+mkdir -p "$SYSCLONE_REPO/home/generated/niri" \
+         "$SYSCLONE_REPO/home/generated/emacs/modules"
 
 # --- Niri ----------------------------------------------------------------
 if $want_niri; then
@@ -143,13 +143,13 @@ if $want_niri; then
   # copy outputs
   if [[ -f "$NIRI_SRC_DIR/config.kdl" ]]; then
     install -m 0644 "$NIRI_SRC_DIR/config.kdl" \
-      "$SYSCLONE_REPO/generated/niri/config.kdl"
+      "$SYSCLONE_REPO/home/generated/niri/config.kdl"
   else
     echo "ERROR: niri tangle produced no config.kdl" >&2; exit 1
   fi
   if [[ -f "$NIRI_SRC_DIR/key_bindings.txt" ]]; then
     install -m 0644 "$NIRI_SRC_DIR/key_bindings.txt" \
-      "$SYSCLONE_REPO/generated/niri/key_bindings.txt"
+      "$SYSCLONE_REPO/home/generated/niri/key_bindings.txt"
   fi
   popd >/dev/null
 fi
@@ -163,11 +163,11 @@ if $want_emacs; then
 
   # copy outputs
   [[ -f "early-init.el" ]] && install -m 0644 "early-init.el" \
-      "$SYSCLONE_REPO/generated/emacs/early-init.el"
+      "$SYSCLONE_REPO/home/generated/emacs/early-init.el"
   [[ -f "init.el" ]] && install -m 0644 "init.el" \
-      "$SYSCLONE_REPO/generated/emacs/init.el"
+      "$SYSCLONE_REPO/home/generated/emacs/init.el"
   if compgen -G "modules/*.el" >/dev/null; then
-    rsync -a --delete "modules/" "$SYSCLONE_REPO/generated/emacs/modules/"
+    rsync -a --delete "modules/" "$SYSCLONE_REPO/home/generated/emacs/modules/"
   fi
   popd >/dev/null
 fi

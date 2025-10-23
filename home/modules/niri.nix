@@ -7,16 +7,13 @@ let
   niriDir  = "${config.xdg.configHome}/niri";
 in
 {
-  # Always install config.kdl from the repo
-  home.file =
+  # Ensure our definition overrides any other module's .source/.text
+  home.file."${niriDir}/config.kdl" = lib.mkForce {
+    text = builtins.readFile cfgPath;
+  };
 
-    # Conditionally add key_bindings.txt if it exists (pure, eval-time)
-    (lib.optionalAttrs (builtins.pathExists keysPath) {
-      "${niriDir}/key_bindings.txt".text = builtins.readFile keysPath;
-    })
-
-    # Always-present entries go here
-    // {
-      "${niriDir}/config.kdl".text = builtins.readFile cfgPath;
-    };
+  # Add key_bindings.txt only if it exists (pure)
+  home.file = lib.optionalAttrs (builtins.pathExists keysPath) {
+    "${niriDir}/key_bindings.txt".text = builtins.readFile keysPath;
+  };
 }

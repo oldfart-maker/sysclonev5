@@ -11,6 +11,12 @@ let
   footIni = "${footDir}/foot.ini";
 in
 {
+home.activation._debugFootPing = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  echo "[foot] foot.nix module ACTIVE"
+  mkdir -p "${config.xdg.configHome}/niri/foot"
+  date > "${config.xdg.configHome}/niri/foot/FOOT_MODULE_ACTIVE"
+'';
+
   # guaranteed write each switch
   home.activation.writeFootIni = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     set -Eeuo pipefail

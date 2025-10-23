@@ -2,13 +2,11 @@
 
 let
   repoRoot    = "${config.home.homeDirectory}/projects/sysclonev5";
-  genEmacsDir = "${repoRoot}/generated/emacs";
+  genEmacsDir = "${repoRoot}/home/generated/emacs";
   genEarly    = "${genEmacsDir}/early-init.el";
   genInit     = "${genEmacsDir}/init.el";
   genModules  = "${genEmacsDir}/modules";
-
   emacsDir    = "${config.xdg.configHome}/emacs-prod";
-
   emacsPkg    = (pkgs.emacs30-pgtk or pkgs.emacs29-pgtk or pkgs.emacs-gtk or pkgs.emacs);
 in
 {

@@ -2,12 +2,26 @@
 { config, pkgs, lib, ... }:
 
 let
+  # Stylix colors (requires stylix.enable = true)
   ch = config.lib.stylix.colors.withHashtag;
+
+  baseDir = "${config.home.homeDirectory}/.config/niri/waybar";
+  cfgPath = "${baseDir}/config";
+  cssPath = "${baseDir}/style.css";
+  colPath = "${baseDir}/colors.css";
 in
 {
-home.packages = [ pkgs.waybar pkgs.pavucontrol ];
 
-  xdg.configFile."niri/waybar/colors.css".text = ''
+  # debug marker; safe to remove later
+  home.file.".hm-waybar-niri-marker".text = "waybar-niri loaded\n";
+
+  home.packages = [
+    pkgs.waybar
+    pkgs.pavucontrol
+  ];
+
+  # --- colors.css (GTK CSS variables via @define-color) ---
+  home.file."${colPath}".text = ''
     @define-color base00 ${ch.base00};
     @define-color base01 ${ch.base01};
     @define-color base02 ${ch.base02};
@@ -24,22 +38,24 @@ home.packages = [ pkgs.waybar pkgs.pavucontrol ];
     @define-color base0D ${ch.base0D};
     @define-color base0E ${ch.base0E};
     @define-color base0F ${ch.base0F};
-    @define-color bg ${ch.base00};
-    @define-color bg_alt ${ch.base01};
-    @define-color bg_alt2 ${ch.base02};
-    @define-color fg ${ch.base05};
-    @define-color red ${ch.base08};
-    @define-color orange ${ch.base09};
-    @define-color yellow ${ch.base0A};
-    @define-color green ${ch.base0B};
-    @define-color teal ${ch.base0C};
-    @define-color blue ${ch.base0D};
-    @define-color mauve ${ch.base0E};
-    @define-color accent ${ch.base0D};
+
+    @define-color bg       ${ch.base00};
+    @define-color bg_alt   ${ch.base01};
+    @define-color bg_alt2  ${ch.base02};
+    @define-color fg       ${ch.base05};
+
+    @define-color red      ${ch.base08};
+    @define-color orange   ${ch.base09};
+    @define-color yellow   ${ch.base0A};
+    @define-color green    ${ch.base0B};
+    @define-color teal     ${ch.base0C};
+    @define-color blue     ${ch.base0D};
+    @define-color mauve    ${ch.base0E};
+    @define-color accent   ${ch.base0D};
   '';
-  
+
   # --- style.css (imports the palette above) ---
-  xdg.configFile."niri/waybar/style.css".text = ''
+  home.file."${cssPath}".text = ''
     @import url("colors.css");
 
     /* ---- global ---- */
@@ -129,7 +145,7 @@ home.packages = [ pkgs.waybar pkgs.pavucontrol ];
   '';
 
   # --- Waybar JSON config ---
-  xdg.configFile."niri/waybar/config".text = builtins.toJSON {  
+  home.file."${cfgPath}".text = builtins.toJSON {
     layer = "top";
     position = "top";
     height = 28;

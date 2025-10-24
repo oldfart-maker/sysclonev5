@@ -1,4 +1,5 @@
 # home/modules/system-theme.nix (only the relevant part shown)
+{ config, pkgs, lib, ... }:
 {
   stylix = {
     enable = true;

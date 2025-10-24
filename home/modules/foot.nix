@@ -13,8 +13,7 @@ in
     settings = {
       main = {
         term = "foot";
-        font = "JetBrains Mono:size=11";
-#        line-height = "1.1";
+        font = "JetBrains Mono:size=10";
         pad = "8x8";
       };
       colors = {

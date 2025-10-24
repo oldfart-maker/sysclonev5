@@ -2,28 +2,33 @@
 { config, lib, ... }:
 
 let
-  # These are path literals, resolved relative to THIS file.
-  # Adjust if you move your repo layout again.
   cfgPath  = ../generated/niri/config.kdl;
   keysPath = ../generated/niri/key_bindings.txt;
 in
 {
-  # Write into ~/.config/niri/*
-  # We define the whole attrset for xdg.configFile in one place,
-  # and then extend it with an optional entry for key_bindings.txt.
+  # diagnostic: prove this module is imported (remove later)
+  home.sessionVariables.NIRI_MODULE_FINGERPRINT = "niri.nix imported";
+
+  # make sure XDG is on (belt & suspenders)
+  xdg.enable = true;
+
+  # fail loudly if the main file isn't present in the repo
+  assertions = [{
+    assertion = builtins.pathExists cfgPath;
+    message = "niri.nix: ../generated/niri/config.kdl not found next to this module.";
+  }];
+
   xdg.configFile =
-    # Always install config.kdl from your repo
     {
       "niri/config.kdl" = {
-        force = true;                         # clobber stale files safely
-        text  = builtins.readFile cfgPath;    # pure: content baked into the store
+        force  = true;
+        source = cfgPath;   # <-- use source, not text
       };
     }
-    # Optionally install key_bindings.txt if present in the repo
-    lib.optionalAttrs (builtins.pathExists keysPath) {
+    // lib.optionalAttrs (builtins.pathExists keysPath) {
       "niri/key_bindings.txt" = {
-        force = true;
-        text  = builtins.readFile keysPath;
+        force  = true;
+        source = keysPath;  # <-- use source, not text
       };
     };
 }

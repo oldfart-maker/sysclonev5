@@ -1,27 +1,27 @@
 { config, pkgs, lib, ... }:
 
 let
-  repoRoot = "${config.home.homeDirectory}/projects/sysclonev5";
-  cfgPath  = "${repoRoot}/home/dotfiles/fastfetch/config.jsonc";
-  logoPath = "${repoRoot}/home/dotfiles/fastfetch/logo";
-  hasLogo  = builtins.pathExists logoPath;
-in {
+  cfgPath  = ../dotfiles/fastfetch/config.jsonc;
+  logoPath = ../dotfiles/fastfetch/logo;
+in
+{
   home.packages = [ pkgs.fastfetch ];
 
-  # Symlink the config from your repo working tree
-  xdg.configFile."fastfetch/config.jsonc".source =
-    config.lib.file.mkOutOfStoreSymlink cfgPath;
-
-  # (Optional) if you keep a custom logo alongside the config
-  xdg.configFile."fastfetch/logo" = lib.mkIf hasLogo {
-    source = config.lib.file.mkOutOfStoreSymlink logoPath;
+  xdg.configFile."fastfetch/config.jsonc" = {
+    source = cfgPath;       # ← store-managed
+    force  = true;
   };
 
-  # Helpful error if you forget to export the config
+  xdg.configFile."fastfetch/logo" = lib.mkIf (builtins.pathExists logoPath) {
+    source    = logoPath;   # directory or file; OK either way
+    recursive = true;
+    force     = true;
+  };
+
   home.activation.fastfetchCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ ! -f "${cfgPath}" ]; then
-      echo "[fastfetch] ERROR: ${cfgPath} is missing."
-      echo "[fastfetch] Copy it into home/dotfiles/fastfetch/, commit, push, then run hm-update."
+      echo "[fastfetch] ERROR: ${cfgPath} missing."
+      echo "[fastfetch] Copy your config into home/dotfiles/fastfetch/ then hm-update."
       exit 42
     fi
   '';

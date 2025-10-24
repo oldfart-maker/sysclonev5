@@ -8,21 +8,24 @@
   home.packages = with pkgs; [ git ];
 
   imports = [
+    # Global
     ./modules/system-theme.nix
     ./modules/fonts.nix
-    ./modules/fonts-extra.nix    
-    ./modules/niri.nix
-    ./modules/niri-data.nix
+    ./modules/fonts-extra.nix
+    ./modules/foot.nix    
+    ./modules/fish.nix
+    ./modules/fastfetch.nix
     ./modules/mako.nix
-    ./modules/foot.nix
     ./modules/tools.nix
+    # Niri Specific
+    ./modules/niri.nix
+    ./modules/niri-data.n
+
    # ./modules/emacs.nix
    # ./modules/sway.nix
    # ./modules/waybar-niri.nix
    # ./modules/rofi-colors-compat.nix
    # ./modules/wallpaper.nix
-   # ./modules/fish.nix
-   #  ./modules/fastfetch.nix
   ];
 
   programs.home-manager.enable = true;  

@@ -1,19 +1,22 @@
-{ config, pkgs, lib, ... }:
+# home/modules/fonts.nix
+{ config, pkgs, ... }:
 {
-  # Enable per-user fontconfig
+  # Per-user fontconfig (needed for defaults & fallback resolution)
   fonts.fontconfig.enable = true;
 
-  # Core text fonts you already had
-  home.packages = [
-    pkgs.jetbrains-mono
-    pkgs.fira-code
-    pkgs.cantarell-fonts
+  # Install the families you always want available
+  home.packages = with pkgs; [
+    jetbrains-mono
+    fira-code
+    cantarell-fonts
+    noto-fonts-emoji
   ];
 
-  # Help apps choose sensible defaults
+  # Set global defaults (independent of Stylix)
   fonts.fontconfig.defaultFonts = {
     monospace = [ "JetBrains Mono" "Fira Code" ];
-    sansSerif = [ "Cantarell" ];
+    sansSerif = [ "Cantarell"     ];
+    serif     = [ "DejaVu Serif"  ];
     emoji     = [ "Noto Color Emoji" ];
   };
 }

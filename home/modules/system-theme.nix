@@ -17,6 +17,7 @@
       rofi.enable = false;
       foot.enable = false;
       fish.enable = false;
+      mako.enable = false;
     };
   };
 }

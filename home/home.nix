@@ -8,7 +8,7 @@
     ./modules/niri.nix
     ./modules/system-theme.nix
     ./modules/waybar-niri.nix
-    ./modules/hm-deploy.nix
+   # ./modules/hm-deploy.nix
     ./modules/rofi-colors-compat.nix
     ./modules/foot.nix
     ./modules/wallpaper.nix

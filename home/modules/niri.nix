@@ -1,4 +1,3 @@
-# home/modules/niri.nix
 { config, lib, ... }:
 
 let
@@ -6,29 +5,26 @@ let
   keysPath = ../generated/niri/key_bindings.txt;
 in
 {
-  # diagnostic: prove this module is imported (remove later)
+  # keep the fingerprint for now
   home.sessionVariables.NIRI_MODULE_FINGERPRINT = "niri.nix imported";
 
-  # make sure XDG is on (belt & suspenders)
-  xdg.enable = true;
-
-  # fail loudly if the main file isn't present in the repo
+  # fail loudly if the main file is missing
   assertions = [{
     assertion = builtins.pathExists cfgPath;
     message = "niri.nix: ../generated/niri/config.kdl not found next to this module.";
   }];
 
-  xdg.configFile =
-    {
-      "niri/config.kdl" = {
-        force  = true;
-        source = cfgPath;   # <-- use source, not text
-      };
-    }
-    // lib.optionalAttrs (builtins.pathExists keysPath) {
-      "niri/key_bindings.txt" = {
-        force  = true;
-        source = keysPath;  # <-- use source, not text
-      };
+  # Use home.file so outputs appear under result/home-files
+  home.file = {
+    ".config/niri/config.kdl" = {
+      force  = true;
+      source = cfgPath;
     };
+  }
+  // lib.optionalAttrs (builtins.pathExists keysPath) {
+    ".config/niri/key_bindings.txt" = {
+      force  = true;
+      source = keysPath;
+    };
+  };
 }

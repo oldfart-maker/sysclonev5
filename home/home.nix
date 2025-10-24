@@ -1,5 +1,12 @@
 { config, pkgs, lib, ... }:
 {
+  home.username = "username";
+  home.homeDirectory = "/home/username";
+  home.stateVersion = "24.05";
+
+  # keep git installed via HM from now on
+  home.packages = with pkgs; [ git ];
+
   imports = [
    # ./modules/emacs.nix
    # ./modules/fonts.nix
@@ -16,8 +23,5 @@
    #  ./modules/fastfetch.nix
   ];
 
-  home.username = "username";
-  home.homeDirectory = "/home/username";
-  home.stateVersion = "24.05";
-  programs.home-manager.enable = true;
+  programs.home-manager.enable = true;  
 }

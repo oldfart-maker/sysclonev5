@@ -16,4 +16,9 @@ in
         text = builtins.readFile cfgPath;
       };
     };
+
+  xdg.configFile."niri/config.kdl" = {
+    force = true;
+    text  = builtins.readFile cfgPath;
+};
 }

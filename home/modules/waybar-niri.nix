@@ -12,9 +12,13 @@ let
 in
 {
 
+  xdg.configFile."niri/waybar/colors.css".force = true;
+  xdg.configFile."niri/waybar/style.css".force  = true;
+  xdg.configFile."niri/waybar/config".force     = true;
+  
   # debug marker; safe to remove later
   home.file.".hm-waybar-niri-marker".text = "waybar-niri loaded\n";
-
+  
   home.packages = [
     pkgs.waybar
     pkgs.pavucontrol

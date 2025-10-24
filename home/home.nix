@@ -19,7 +19,7 @@
     ./modules/tools.nix
     # Niri Specific
     ./modules/niri.nix
-    ./modules/niri-data.n
+    ./modules/niri-data.nix
 
    # ./modules/emacs.nix
    # ./modules/sway.nix

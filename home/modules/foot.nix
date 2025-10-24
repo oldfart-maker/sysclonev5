@@ -14,7 +14,7 @@ in
       main = {
         term = "foot";
         font = "JetBrains Mono:size=11";
-        line-height = "1.1";
+#        line-height = "1.1";
         pad = "8x8";
       };
       colors = {

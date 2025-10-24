@@ -24,7 +24,7 @@
       waybar = { enable = false; addCss = false; };
       rofi.enable = false;
       foot.enable = false;
-      # alacritty.enable = true;
+      fish.enable = false;
     };
   };
 }

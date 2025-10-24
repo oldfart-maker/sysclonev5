@@ -12,6 +12,7 @@
     ./modules/fonts.nix
     ./modules/fonts-extra.nix    
     ./modules/niri.nix
+    ./modules/mako.nix
     ./modules/foot.nix
     ./modules/tools.nix
    # ./modules/emacs.nix

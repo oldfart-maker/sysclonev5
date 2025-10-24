@@ -9,11 +9,11 @@
 
   imports = [
     ./modules/system-theme.nix
+    ./modules/font.nix
+    ./modules/fonts-extra.nix    
     ./modules/niri.nix
-    ./modules/foot.nix    
+    ./modules/foot.nix
    # ./modules/emacs.nix
-   # ./modules/fonts.nix
-   # ./modules/fonts-extra.nix
    # ./modules/sway.nix
    # ./modules/waybar-niri.nix
    # ./modules/rofi-colors-compat.nix

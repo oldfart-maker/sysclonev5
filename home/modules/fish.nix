@@ -1,36 +1,29 @@
+# home/modules/fish.nix
 { config, pkgs, lib, ... }:
 
 let
-  cfgFile   = ../dotfiles/fish/config.fish;
-  funcsDir  = ../dotfiles/fish/functions;
+  userCfg = ../dotfiles/fish/config.fish;
+  funcs   = ../dotfiles/fish/functions;
 in
 {
-  programs.fish.enable = true;
-  home.packages = [ pkgs.fish ];
+  programs.fish = {
+    enable = true;
+    # your config runs for interactive shells from conf.d
+    # (rename the file if you want a different order)
+  };
 
-  # config.fish → from repo (if present)
-  home.file.".config/fish/config.fish" =
-    lib.mkIf (builtins.pathExists cfgFile) {
-      source = cfgFile;     # ← store-managed, shows in result/home-files
-      force  = true;        # clobber any stray file
+  # Put your config into conf.d so it’s sourced automatically
+  xdg.configFile."fish/conf.d/00-user.fish" =
+    lib.mkIf (builtins.pathExists userCfg) {
+      source = userCfg;     # store-managed, shows up in result/home-files
+      force  = true;
     };
 
-  # functions/ → from repo (if present)
+  # Keep your functions dir if you use it
   home.file.".config/fish/functions" =
-    lib.mkIf (builtins.pathExists funcsDir) {
-      source    = funcsDir; # ← directory; HM will link files recursively
+    lib.mkIf (builtins.pathExists funcs) {
+      source    = funcs;
       recursive = true;
       force     = true;
     };
-
-  # Loud-but-friendly check (optional)
-  home.activation.fishDotfilesCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if [ ! -f "${cfgFile}" ]; then
-      echo "[fish] NOTE: ${cfgFile} not found (ok if intentional)."
-    fi
-    if [ ! -d "${funcsDir}" ]; then
-      echo "[fish] NOTE: ${funcsDir} not found (ok if intentional)."
-    fi
-  '';
-
 }

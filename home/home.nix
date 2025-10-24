@@ -8,16 +8,15 @@
   home.packages = with pkgs; [ git ];
 
   imports = [
+    ./modules/system-theme.nix
+    ./modules/niri.nix
+    ./modules/foot.nix    
    # ./modules/emacs.nix
    # ./modules/fonts.nix
    # ./modules/fonts-extra.nix
    # ./modules/sway.nix
-    ./modules/niri.nix
-   # ./modules/system-theme.nix
    # ./modules/waybar-niri.nix
-   # ./modules/hm-deploy.nix
    # ./modules/rofi-colors-compat.nix
-    ./modules/foot.nix
    # ./modules/wallpaper.nix
    # ./modules/fish.nix
    #  ./modules/fastfetch.nix

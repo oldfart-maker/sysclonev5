@@ -17,7 +17,7 @@
    # ./modules/waybar-niri.nix
    # ./modules/hm-deploy.nix
    # ./modules/rofi-colors-compat.nix
-   # ./modules/foot.nix
+    ./modules/foot.nix
    # ./modules/wallpaper.nix
    # ./modules/fish.nix
    #  ./modules/fastfetch.nix

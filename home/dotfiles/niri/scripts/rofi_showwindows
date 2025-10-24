@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+## Copyright (C) 2020-2024 Aditya Shakya <adi1090x@gmail.com>
+
+# Import Current Theme
+DIR="$HOME/.config/niri"
+RASI="$DIR/rofi/windows.rasi"
+
+# Run
+rofi \
+-show window \
+-theme ${RASI}
+
+

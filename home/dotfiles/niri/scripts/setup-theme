@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+THEME=Gruvbox
+ICON_THEME=Material-Dark
+FONT_THEME="JetBrains Mono 10"
+CURSOR_THEME=Qogirr
+CURSOR_SIZE=12
+
+# Set GTK settings via gsettings (if dconf is in use)
+gsettings set org.gnome.desktop.interface gtk-theme "$THEME"
+gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME"
+gsettings set org.gnome.desktop.interface font-name "$FONT_THEME"
+gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_THEME"
+gsettings set org.gnome.desktop.interface cursor-size "$CURSOR_SIZE"
+
+# Write GTK config files for apps that read from them directly
+mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0
+
+cat > ~/.config/gtk-3.0/settings.ini <<EOF
+[Settings]
+gtk-theme-name=$THEME
+gtk-icon-theme-name=$ICON_THEME
+gtk-font-name=$FONT_THEME
+EOF
+
+cat > ~/.config/gtk-4.0/settings.ini <<EOF
+[Settings]
+gtk-theme-name=$THEME
+gtk-icon-theme-name=$ICON_THEME
+gtk-font-name=$FONT_THEME
+EOF
+
+# Export environment variables (optional but useful)
+export GTK_THEME=$THEME
+export GTK_ICON_THEME=$ICON_THEME
+export XCURSOR_THEME=$CURSOR_THEME
+export XCURSOR_SIZE=$CURSOR_SIZE

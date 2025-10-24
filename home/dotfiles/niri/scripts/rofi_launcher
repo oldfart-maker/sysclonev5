@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+## Copyright (C) 2020-2024 Aditya Shakya <adi1090x@gmail.com>
+
+# Import Current Theme
+DIR="$HOME/.config/niri"
+
+# Themes: https://github.com/adi1090x/rofi
+RASI="$DIR/rofi/launcher.rasi"
+
+# date started: 6/21/2025
+# RASI="$DIR/rofi/tp-1-style-10.rasi"
+
+# date started:
+# RASI="$DIR/rofi/tp-2-style-10.rasi"
+
+# date started: 
+# RASI="$DIR/rofi/tp-3-style-3.rasi"
+
+# date started: 
+# RASI="$DIR/rofi/tp-3-style-8.rasi"
+
+# date started: 
+# RASI="$DIR/rofi/tp-3-style-9.rasi"
+
+# date started:
+# RASI="$DIR/rofi/tp-4-style-3.rasi"
+
+# date started:
+# RASI="$DIR/rofi/tp-4-style-7.rasi"
+
+# date started:
+# RASI="$DIR/rofi/tp-5-style-4.rasi"
+
+# date started:
+# RASI="$DIR/rofi/tp-6-style-7.rasi"
+
+
+
+# Run
+rofi \
+-show drun \
+-theme ${RASI}

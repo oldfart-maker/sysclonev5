@@ -1,0 +1,30 @@
+* {
+    font: "monospace 12";
+}
+
+window {
+    width: 1200px;
+    height: 400px;
+    location: center;
+    anchor: center;
+    fullscreen: false;
+    padding: 10px;
+}
+
+mainbox {
+    orientation: vertical;
+    spacing: 10px;
+    children: [inputbar, listview];
+}
+
+inputbar {
+    expand: false;
+    padding: 10px;
+}
+
+listview {
+    expand: true;
+    spacing: 5px;
+    columns: 1;
+    dynamic: true;
+}

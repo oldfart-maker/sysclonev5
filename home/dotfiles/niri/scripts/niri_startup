@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+"xwayland-satellite" "--display 2"
+"swayidle -w timeout 600 ~/.config/niri/scripts/lockscreen"
+"~/.config/niri/scripts/setup_theme"
+"~/.config/niri/scripts/wallpaper"
+"~/.config/niri/scripts/notifications"
+"~/.config/niri/scripts/statusbar"
+"spotify"
+"element-desktop"
+"googlemessages"
+"google-calendar-nativefier-dark"
+"vesktop"

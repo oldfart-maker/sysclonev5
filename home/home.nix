@@ -9,10 +9,11 @@
 
   imports = [
     ./modules/system-theme.nix
-    ./modules/font.nix
+    ./modules/fonts.nix
     ./modules/fonts-extra.nix    
     ./modules/niri.nix
     ./modules/foot.nix
+    ./modules/tools.nix
    # ./modules/emacs.nix
    # ./modules/sway.nix
    # ./modules/waybar-niri.nix

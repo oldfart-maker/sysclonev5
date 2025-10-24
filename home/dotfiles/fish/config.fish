@@ -19,22 +19,3 @@ function vterm_printf;
     end
 end
 
-function emacs-profile
-    set config_dir "$HOME/.config/$argv[1]"
-
-    if test -d "$config_dir"
-        command emacs --init-directory "$config_dir" $argv[2..-1]
-    else
-        echo "Emacs config '$argv[1]' not found in ~/.config"
-        return 1
-    end
-end
-
-
-if not contains $HOME/.local/bin $PATH
-    set PATH $HOME/.local/bin $PATH
-end
-
-if not contains $HOME/.local/bin/python-scripts $PATH
-    set PATH $HOME/.local/bin/python-scripts $PATH
-end

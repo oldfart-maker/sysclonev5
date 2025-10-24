@@ -2,11 +2,10 @@
 { config, pkgs, lib, ... }:
 
 let
-  ch = config.lib.stylix.colors.withHashtag;  # hex with '#'
+  ch = config.lib.stylix.colors.withHashtag;
   sharedDir = "${config.home.homeDirectory}/.config/niri/rofi/shared";
 in
 {
-  # Make sure the dir exists (HM will create it implicitly via home.file)
   home.file."${sharedDir}/colors.rasi".text = ''
     * {
       background:     ${ch.base00};

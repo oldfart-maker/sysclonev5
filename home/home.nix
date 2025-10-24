@@ -20,12 +20,12 @@
     # Niri Specific
     ./modules/niri.nix
     ./modules/niri-data.nix
+    ./modules/waybar-niri.nix
 
    # ./modules/emacs.nix
    # ./modules/sway.nix
    # ./modules/waybar-niri.nix
    # ./modules/rofi-colors-compat.nix
-   # ./modules/wallpaper.nix
   ];
 
   programs.home-manager.enable = true;  

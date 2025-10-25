@@ -27,8 +27,6 @@
         modules = [
           stylix.homeModules.stylix
           ./home.nix
-          # optional, can remove:
-          # { home.packages = [ home-manager.packages.${system}.default ]; }
         ];
         extraSpecialArgs = { inherit system; };
       };

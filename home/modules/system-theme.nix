@@ -5,7 +5,7 @@
     enable = true;
     
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml";
-    image = "${config.xdg.stateHome or "${config.home.homeDirectory}/.local/state"}/wallpaper/current";    
+    stylix.image = ./assets/wallpapers/default.jpg;
     polarity = "dark";
 
     cursor = {

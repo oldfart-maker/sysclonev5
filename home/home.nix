@@ -9,6 +9,7 @@
 
   imports = [
     # Global
+    ./modules/user-dirs.nix    
     ./modules/system-theme.nix
     ./modules/fonts.nix
     ./modules/fonts-extra.nix

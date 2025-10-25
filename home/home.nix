@@ -17,6 +17,7 @@
     ./modules/fastfetch.nix
     ./modules/mako.nix
     ./modules/tools.nix
+    ./modules/wallpaper.nix
     # Niri Specific
     ./modules/niri.nix
     ./modules/niri-data.nix

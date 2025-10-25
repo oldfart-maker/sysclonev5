@@ -21,10 +21,10 @@
     ./modules/niri.nix
     ./modules/niri-data.nix
     ./modules/waybar-niri.nix
+    ./modules/rofi.nix
 
    # ./modules/emacs.nix
    # ./modules/sway.nix
-   # ./modules/waybar-niri.nix
    # ./modules/rofi-colors-compat.nix
   ];
 

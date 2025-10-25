@@ -12,9 +12,10 @@ let
   pidFile     = "${stateDir}/bg.pid";
 
   # Detect a Wayland session (usable from keybinds/tty)
-  detectWayland = ''
-    export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-    if test -z "${WAYLAND_DISPLAY:-}"; then
+    detectWayland = ''
+    # Keep XDG_RUNTIME_DIR literal for the shell; escape Nix antiquotation with ''${…}
+    export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
+    if test -z "''${WAYLAND_DISPLAY:-}"; then
       if test -n "$XDG_RUNTIME_DIR"; then
         wd="$(ls "$XDG_RUNTIME_DIR" 2>/dev/null | grep -E '^wayland-' | head -n1 || true)"
         test -n "$wd" && export WAYLAND_DISPLAY="$wd"

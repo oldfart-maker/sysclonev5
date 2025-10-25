@@ -2,126 +2,104 @@
 { config, pkgs, lib, ... }:
 
 let
-  # Folders
+  # Folders (you said dir creation is handled elsewhere)
   picturesDir = "${config.home.homeDirectory}/Pictures";
   wallsDir    = "${picturesDir}/wallpapers";
 
-  # Per-user state (no git; survives switches)
+  # Per-user state (kept outside git; survives HM switches)
   stateDir    = "${config.xdg.stateHome or "${config.home.homeDirectory}/.local/state"}/wallpaper";
   currentLink = "${stateDir}/current";
   pidFile     = "${stateDir}/bg.pid";
 
-  # Detect a Wayland session (usable from keybinds/tty)
-    detectWayland = ''
+  # Detect a Wayland session (works from keybinds/TTY)
+  detectWayland = ''
     # Keep XDG_RUNTIME_DIR literal for the shell; escape Nix antiquotation with ''${…}
     export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
     if test -z "''${WAYLAND_DISPLAY:-}"; then
       if test -n "$XDG_RUNTIME_DIR"; then
-        wd="$(ls "$XDG_RUNTIME_DIR" 2>/dev/null | grep -E '^wayland-' | head -n1 || true)"
+        wd="$(${pkgs.coreutils}/bin/ls "$XDG_RUNTIME_DIR" 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E '^wayland-' | ${pkgs.coreutils}/bin/head -n1 || true)"
         test -n "$wd" && export WAYLAND_DISPLAY="$wd"
       fi
     fi
   '';
 
-  # Apply the given image path (or ${currentLink}) with swww or swaybg
+  # Apply the given image path (or ${currentLink}) with swaybg
   wallpaperApply = pkgs.writeShellScriptBin "wallpaper-apply" ''
     set -Eeuo pipefail
 
     mkdir -p "${stateDir}"
 
     ${detectWayland}
+    if test -z "''${WAYLAND_DISPLAY:-}"; then
+      echo "[wallpaper-apply] No Wayland session detected." >&2
+      exit 10
+    fi
 
-    # choose target image
     img="''${1:-${currentLink}}"
     if [ ! -e "$img" ]; then
       echo "[wallpaper-apply] missing image: $img" >&2
       exit 2
     fi
 
-    # Prefer swww if present (smooth transitions), else swaybg
-    if command -v swww >/dev/null 2>&1; then
-      # start daemon if not running
-      swww query >/dev/null 2>&1 || swww-daemon --no-daemonize &
-      # give daemon a moment on first start
-      for i in 1 2 3; do swww query >/dev/null 2>&1 && break || sleep 0.15; done
-      # crossfade
-      swww img "$img" --transition-type any --transition-duration 0.35
-    else
-      # kill previous swaybg (best-effort)
-      if [ -f "${pidFile}" ]; then
-        if kill -0 "$(cat "${pidFile}")" 2>/dev/null; then
-          kill "$(cat "${pidFile}")" 2>/dev/null || true
-          # tiny grace period
-          sleep 0.05
-        fi
-        rm -f "${pidFile}"
+    # Kill previous swaybg (best effort)
+    if [ -f "${pidFile}" ]; then
+      if kill -0 "$(<"${pidFile}")" 2>/dev/null; then
+        kill "$(<"${pidFile}")" 2>/dev/null || true
+        # tiny grace period
+        sleep 0.05
       fi
-
-      # set wallpaper on all outputs (-m fill usually looks good)
-      setsid -f ${pkgs.swaybg}/bin/swaybg -m fill -i "$img" 1>/dev/null 2>&1 &
-      echo $! > "${pidFile}"
+      rm -f "${pidFile}"
     fi
+    ${pkgs.procps}/bin/pkill -x swaybg 2>/dev/null || true
+
+    # Spawn fresh swaybg on all outputs
+    setsid -f ${pkgs.swaybg}/bin/swaybg -i "$img" -m fill 1>/dev/null 2>&1 &
+    echo $! > "${pidFile}"
+
+    echo "[wallpaper-apply] set: $img"
   '';
 
-  # Pick a random image from ${wallsDir}, update ${currentLink}, optionally re-theme
+  # Pick a random image from ${wallsDir}, update ${currentLink}, then apply it
   wallpaperRandom = pkgs.writeShellScriptBin "wallpaper-random" ''
     set -Eeuo pipefail
     mkdir -p "${stateDir}"
 
     dir="${wallsDir}"
-    test -d "$dir" || { echo "[wallpaper-random] not a dir: $dir" >&2; exit 3; }
+    if [ ! -d "$dir" ]; then
+      echo "[wallpaper-random] not a dir: $dir" >&2
+      exit 3
+    fi
 
     # find images (jpg/png/webp), pick one
-    mapfile -t imgs < <(find "$dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort)
-    test "''${#imgs[@]}" -gt 0 || { echo "[wallpaper-random] no images in $dir" >&2; exit 4; }
+    mapfile -t imgs < <(${pkgs.findutils}/bin/find "$dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | ${pkgs.coreutils}/bin/sort)
+    if [ "''${#imgs[@]}" -eq 0 ]; then
+      echo "[wallpaper-random] no images in $dir" >&2
+      exit 4
+    fi
 
     pick="''${imgs[RANDOM % ''${#imgs[@]}]}"
 
     # refresh the 'current' symlink atomically
-    tmpLink="$(mktemp -u "${currentLink}.XXXX")"
-    ln -sfT "$pick" "$tmpLink"
-    mv -f "$tmpLink" "${currentLink}"
+    tmpLink="$(${pkgs.coreutils}/bin/mktemp -u "${currentLink}.XXXX")"
+    ${pkgs.coreutils}/bin/ln -sfT "$pick" "$tmpLink"
+    ${pkgs.coreutils}/bin/mv -f "$tmpLink" "${currentLink}"
 
     echo "[wallpaper-random] -> $pick"
 
     # apply to the running session
-    wallpaper-apply "${currentLink}"
+    ${wallpaperApply}/bin/wallpaper-apply "${currentLink}"
 
-    # Optional: if the first arg is --retheme, ask Home-Manager to re-generate Stylix colors from the current image
-    if [ "''${1:-}" = "--retheme" ]; then
-      if command -v home-manager >/dev/null 2>&1; then
-        echo "[wallpaper-random] re-theming via Home Manager..."
-        home-manager switch >/dev/null
-      else
-        echo "[wallpaper-random] home-manager not found, skipping retheme." >&2
-      fi
-    fi
+    # Optional retheme trigger disabled (swww/Stylix not called here)
   '';
 in
 {
-  # Provide the tools
   home.packages = [
     wallpaperApply
     wallpaperRandom
     pkgs.swaybg
     pkgs.findutils
     pkgs.coreutils
-    pkgs.gawk
-    pkgs.swww     # optional; remove if you don't want it
+    pkgs.procps
+    pkgs.gnugrep
   ];
-
-  # (Optional) a tiny user service to re-apply the last wallpaper on login
-  # systemd.user.services."wallpaper-apply" = {
-  #  Unit = {
-  #    Description = "Apply last wallpaper";
-  #    After = [ "graphical-session-pre.target" ];
-  #    PartOf = [ "graphical-session.target" ];
-  #  };
-  #  Service = {
-  #    Type = "oneshot";
-  #    ExecStart = "${wallpaperApply}/bin/wallpaper-apply";
-  #    Environment = [ "XDG_RUNTIME_DIR=%t" ];
-  #  };
-  #  Install = { WantedBy = [ "graphical-session.target" ]; };
-  # };
 }

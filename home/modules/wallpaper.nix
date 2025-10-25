@@ -1,96 +1,104 @@
 # modules/wallpaper.nix
 { config, pkgs, lib, ... }:
-let
-  picturesDir   = "${config.home.homeDirectory}/Pictures";
-  wallsDir      = "${picturesDir}/wallpapers";
-  shotsDir      = "${picturesDir}/screenshots";
-  stateDir      = "${config.xdg.stateHome or "${config.home.homeDirectory}/.local/state"}/wallpaper";
-  currentLink   = "${stateDir}/current";
-  swaybgPidfile = "${stateDir}/swaybg.pid";
 
-  # Apply the selected wallpaper (from arg or ${currentLink})
+let
+  # Folders
+  picturesDir = "${config.home.homeDirectory}/Pictures";
+  wallsDir    = "${picturesDir}/wallpapers";
+
+  # Per-user state (no git; survives switches)
+  stateDir    = "${config.xdg.stateHome or "${config.home.homeDirectory}/.local/state"}/wallpaper";
+  currentLink = "${stateDir}/current";
+  pidFile     = "${stateDir}/bg.pid";
+
+  # Detect a Wayland session (usable from keybinds/tty)
+  detectWayland = ''
+    export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    if test -z "${WAYLAND_DISPLAY:-}"; then
+      if test -n "$XDG_RUNTIME_DIR"; then
+        wd="$(ls "$XDG_RUNTIME_DIR" 2>/dev/null | grep -E '^wayland-' | head -n1 || true)"
+        test -n "$wd" && export WAYLAND_DISPLAY="$wd"
+      fi
+    fi
+  '';
+
+  # Apply the given image path (or ${currentLink}) with swww or swaybg
   wallpaperApply = pkgs.writeShellScriptBin "wallpaper-apply" ''
     set -Eeuo pipefail
 
-    # If WAYLAND_DISPLAY isn't set (e.g., ssh), try to detect it from sockets.
-    if [[ -z "''${WAYLAND_DISPLAY:-}" ]]; then
-      uid="$(id -u)"
-      sock="$(ls -1 /run/user/"$uid"/wayland-* 2>/dev/null | head -n1 || true)"
-      if [[ -S "$sock" ]]; then
-        export WAYLAND_DISPLAY="$(basename "$sock")"
+    mkdir -p "${stateDir}"
+
+    ${detectWayland}
+
+    # choose target image
+    img="''${1:-${currentLink}}"
+    if [ ! -e "$img" ]; then
+      echo "[wallpaper-apply] missing image: $img" >&2
+      exit 2
+    fi
+
+    # Prefer swww if present (smooth transitions), else swaybg
+    if command -v swww >/dev/null 2>&1; then
+      # start daemon if not running
+      swww query >/dev/null 2>&1 || swww-daemon --no-daemonize &
+      # give daemon a moment on first start
+      for i in 1 2 3; do swww query >/dev/null 2>&1 && break || sleep 0.15; done
+      # crossfade
+      swww img "$img" --transition-type any --transition-duration 0.35
+    else
+      # kill previous swaybg (best-effort)
+      if [ -f "${pidFile}" ]; then
+        if kill -0 "$(cat "${pidFile}")" 2>/dev/null; then
+          kill "$(cat "${pidFile}")" 2>/dev/null || true
+          # tiny grace period
+          sleep 0.05
+        fi
+        rm -f "${pidFile}"
       fi
-    fi
 
-    # If still not in Wayland, just succeed quietly.
-    if [[ -z "''${WAYLAND_DISPLAY:-}" && -z "''${SWAYSOCK:-}" ]]; then
-      exit 0
+      # set wallpaper on all outputs (-m fill usually looks good)
+      setsid -f ${pkgs.swaybg}/bin/swaybg -m fill -i "$img" 1>/dev/null 2>&1 &
+      echo $! > "${pidFile}"
     fi
-
-    WALL="''\${1:-${currentLink}}"
-    # If no current, try to pick one once.
-    if [[ ! -e "$WALL" ]]; then
-      if compgen -G "${wallsDir}/*.{jpg,jpeg,png,webp}" > /dev/null; then
-        pick="$(find "${wallsDir}" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort | shuf -n1)"
-        mkdir -p "${stateDir}"
-        rm -f "${currentLink}"
-        ln -s "$pick" "${currentLink}"
-        WALL="${currentLink}"
-      else
-        exit 0
-      fi
-    fi
-
-    # Stop any previous swaybg we started
-    if [[ -f "${swaybgPidfile}" ]] && kill -0 "$(cat ${swaybgPidfile})" 2>/dev/null; then
-      kill "$(cat ${swaybgPidfile})" || true
-      rm -f "${swaybgPidfile}"
-    fi
-
-    # Launch swaybg
-    setsid ${pkgs.swaybg}/bin/swaybg -m fill -i "$WALL" >/dev/null 2>&1 &
-    echo $! > "${swaybgPidfile}"
   '';
 
-  # Pick a random wallpaper, store it as ${currentLink}, and (if Wayland) apply it
+  # Pick a random image from ${wallsDir}, update ${currentLink}, optionally re-theme
   wallpaperRandom = pkgs.writeShellScriptBin "wallpaper-random" ''
     set -Eeuo pipefail
-    walls="${wallsDir}"
-    mapfile -t files < <(find "$walls" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort)
-    count="''\${#files[@]}"
-    if (( count == 0 )); then
-      echo "No images in $walls" >&2
-      exit 1
-    fi
-
-    pick="''\${files[$RANDOM % ''\${#files[@]}]}"
     mkdir -p "${stateDir}"
-    rm -f "${currentLink}"
-    ln -s "$pick" "${currentLink}"
 
-    # Apply only if Wayland is present; otherwise exit 0
-    if [[ -n "''${WAYLAND_DISPLAY:-}" || -n "''${SWAYSOCK:-}" ]]; then
-      exec ${wallpaperApply}/bin/wallpaper-apply "${currentLink}"
-    else
-      exit 0
+    dir="${wallsDir}"
+    test -d "$dir" || { echo "[wallpaper-random] not a dir: $dir" >&2; exit 3; }
+
+    # find images (jpg/png/webp), pick one
+    mapfile -t imgs < <(find "$dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort)
+    test "''${#imgs[@]}" -gt 0 || { echo "[wallpaper-random] no images in $dir" >&2; exit 4; }
+
+    pick="''${imgs[RANDOM % ''${#imgs[@]}]}"
+
+    # refresh the 'current' symlink atomically
+    tmpLink="$(mktemp -u "${currentLink}.XXXX")"
+    ln -sfT "$pick" "$tmpLink"
+    mv -f "$tmpLink" "${currentLink}"
+
+    echo "[wallpaper-random] -> $pick"
+
+    # apply to the running session
+    wallpaper-apply "${currentLink}"
+
+    # Optional: if the first arg is --retheme, ask Home-Manager to re-generate Stylix colors from the current image
+    if [ "''${1:-}" = "--retheme" ]; then
+      if command -v home-manager >/dev/null 2>&1; then
+        echo "[wallpaper-random] re-theming via Home Manager..."
+        home-manager switch >/dev/null
+      else
+        echo "[wallpaper-random] home-manager not found, skipping retheme." >&2
+      fi
     fi
   '';
 in
 {
-  # Ensure directories exist (idempotent)
-  home.activation.createWallpaperDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    install -d -m 755 ${lib.escapeShellArg picturesDir} \
-                       ${lib.escapeShellArg wallsDir} \
-                       ${lib.escapeShellArg shotsDir} \
-                       ${lib.escapeShellArg stateDir}
-  '';
-
- # Wallpaper is managed outside of the context of HM, so we need to re-apply
- # the wall paper after a switch.
-home.activation.reapplyWallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-  ${pkgs.bash}/bin/bash -lc "wallpaper-apply" >/dev/null 2>&1 || true
-'';
-
-  # Install the scripts + tools
+  # Provide the tools
   home.packages = [
     wallpaperApply
     wallpaperRandom
@@ -98,7 +106,21 @@ home.activation.reapplyWallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     pkgs.findutils
     pkgs.coreutils
     pkgs.gawk
+    pkgs.swww     # optional; remove if you don't want it
   ];
 
-  # (Intentionally no systemd.user.services here)
+  # (Optional) a tiny user service to re-apply the last wallpaper on login
+  # systemd.user.services."wallpaper-apply" = {
+  #  Unit = {
+  #    Description = "Apply last wallpaper";
+  #    After = [ "graphical-session-pre.target" ];
+  #    PartOf = [ "graphical-session.target" ];
+  #  };
+  #  Service = {
+  #    Type = "oneshot";
+  #    ExecStart = "${wallpaperApply}/bin/wallpaper-apply";
+  #    Environment = [ "XDG_RUNTIME_DIR=%t" ];
+  #  };
+  #  Install = { WantedBy = [ "graphical-session.target" ]; };
+  # };
 }

@@ -2,28 +2,33 @@
 { config, pkgs, lib, ... }:
 
 let
-  userCfg = ../dotfiles/fish/config.fish;
-  funcs   = ../dotfiles/fish/functions;
+  confdDir = ../dotfiles/fish/conf.d;
+  funcsDir = ../dotfiles/fish/functions;
 in
 {
   programs.fish = {
     enable = true;
-    # your config runs for interactive shells from conf.d
-    # (rename the file if you want a different order)
+
+    plugins = [
+      { name = "tide"; src = pkgs.fishPlugins.tide; }
+    ];
+
+    # Optional: add a couple of sane defaults; keep these minimal
+    interactiveShellInit = ''
+      # Example: ensure nix profile is in PATH if your login shell missed it
+      test -f ~/.nix-profile/etc/profile.d/nix.sh; and source ~/.nix-profile/etc/profile.d/nix.sh ^/dev/null
+    '';
   };
 
-  # Put your config into conf.d so it’s sourced automatically
-  xdg.configFile."fish/conf.d/00-user.fish" =
-    lib.mkIf (builtins.pathExists userCfg) {
-      source = userCfg;     # store-managed, shows up in result/home-files
-      force  = true;
-    };
+  xdg.configFile."fish/conf.d" = lib.mkIf (builtins.pathExists confdDir) {
+    source    = confdDir;
+    recursive = true;
+    force     = true;
+  };
 
-  # Keep your functions dir if you use it
-  home.file.".config/fish/functions" =
-    lib.mkIf (builtins.pathExists funcs) {
-      source    = funcs;
-      recursive = true;
-      force     = true;
-    };
+  home.file.".config/fish/functions" = lib.mkIf (builtins.pathExists funcsDir) {
+    source    = funcsDir;
+    recursive = true;
+    force     = true;
+  };
 }

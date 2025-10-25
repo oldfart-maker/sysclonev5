@@ -22,10 +22,8 @@
     ./modules/niri-data.nix
     ./modules/waybar-niri.nix
     ./modules/rofi.nix
-
-   # ./modules/emacs.nix
-   # ./modules/sway.nix
-   # ./modules/rofi-colors-compat.nix
+    # Other
+    ./modules/emacs.nix
   ];
 
   programs.home-manager.enable = true;  

@@ -21,10 +21,7 @@ in
     }
   '';
 
-  # Style (feel free to tweak)
   xdg.configFile."niri/waybar/style.css".text = ''
-    @import url("colors.css");
-
     * { font-family: "JetBrains Mono", "Symbols Nerd Font", monospace;
         font-size: 12pt; }
 
@@ -49,7 +46,6 @@ in
     }
   '';
 
-  # Config (JSON; uses Waybar’s niri modules)
   xdg.configFile."niri/waybar/config".text = lib.generators.toJSON {} {
     layer = "top";
     position = "top";

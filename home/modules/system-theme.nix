@@ -5,7 +5,7 @@
     enable = true;
     
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml";
-    stylix.image = ./assets/wallpapers/default.jpg;
+    image = ./assets/wallpapers/default.jpg;
     polarity = "dark";
 
     cursor = {

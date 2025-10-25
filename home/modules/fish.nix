@@ -8,11 +8,12 @@ in
 {
   programs.fish = {
     enable = true;
-
+    
     plugins = [
-      { name = "tide"; src = pkgs.fishPlugins.tide; }
+      # note the `.src`
+      { name = "tide"; src = pkgs.fishPlugins.tide.src; }
     ];
-
+  
   interactiveShellInit = ''
     # Prefer fish-native Nix init if present
     if test -e ~/.nix-profile/etc/profile.d/nix.fish

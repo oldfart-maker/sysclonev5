@@ -176,13 +176,20 @@ fi
 log "sysclonev5: commit if home/generated/ changed"
 pushd "$SYSCLONE_REPO" >/dev/null
 
-# Stage additions, deletions, and modifications under home/generated
 git add -A home/generated
 
-# If anything is staged, commit it
 if ! git diff --cached --quiet -- home/generated; then
   git commit -m "tangle-sync: update generated configs"
-  echo "Committed. Push with: git -C \"$SYSCLONE_REPO\" push"
+
+  # Push (set upstream if needed)
+  branch="$(git rev-parse --abbrev-ref HEAD)"
+  if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+    git push
+  else
+    git push -u origin "$branch"
+  fi
+
+  echo "Committed & pushed."
 else
   echo "No changes in home/generated/; nothing to commit."
 fi

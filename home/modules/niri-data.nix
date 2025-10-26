@@ -6,7 +6,6 @@ let
   niriRoot   = ../dotfiles/niri;
   scriptsDir = niriRoot + "/scripts";
   rofiDir    = niriRoot + "/rofi";
-  makoDir    = niriRoot + "/mako";
 
   linkDir = src: target: {
     ${target} = {
@@ -31,13 +30,5 @@ in
 
       (lib.optionalAttrs (builtins.pathExists rofiDir)
         (linkDir rofiDir ".config/niri/rofi"))
-
-      (lib.optionalAttrs (builtins.pathExists makoDir)
-        (linkDir makoDir ".config/niri/mako"))
     ];
-
-  xdg.configFile."mako/config" =
-    lib.mkIf (builtins.pathExists (makoDir + "/config")) {
-      source = makoDir + "/config";
-    };
 }

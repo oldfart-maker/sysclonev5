@@ -93,5 +93,5 @@
   :commands vterm
   :bind ("C-c v" . vterm)
   :config
-  (setq vterm-shell "/usr/bin/fish")
+  (setq vterm-shell "/usr/bin")
   (setq vterm-max-scrollback 10000))

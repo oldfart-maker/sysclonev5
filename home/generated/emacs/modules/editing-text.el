@@ -169,13 +169,13 @@
                              tab-width 2))))
 
  ;; optional: on-save formatting with alejandra (or nixfmt)
- (use-package reformatter
+ (use-package reformattner
    :after nix-mode
    :config
    (reformatter-define alejandra-format
      :program "alejandra" :args '("-q") :stdin t)
    (add-hook 'nix-mode-hook
-             (lambda ()
+             (lambda ())))
 
  (provide 'editing-text)
 ;;; editing-text.el ends here

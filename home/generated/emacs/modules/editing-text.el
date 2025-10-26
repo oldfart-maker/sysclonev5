@@ -169,7 +169,7 @@
                              tab-width 2))))
 
  ;; optional: on-save formatting with alejandra (or nixfmt)
- (use-package reformattner
+ (use-package reformatter
    :after nix-mode
    :config
    (reformatter-define alejandra-format

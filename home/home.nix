@@ -24,8 +24,10 @@
     ./modules/niri-data.nix
     ./modules/waybar-niri.nix
     ./modules/rofi.nix
-    # Other
+    # Emacs
     ./modules/emacs.nix
+    # Dev Tools
+    ./modules/dev-tools.nix
   ];
 
   programs.home-manager.enable = true;  

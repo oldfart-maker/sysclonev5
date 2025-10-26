@@ -1,14 +1,16 @@
-# home/modules/dev-tools.nix
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    # build tools
+    # build stack
     cmake
     gnumake
     gcc
     ninja
     pkgconf
     which
+    libtool
+    autoconf
+    automake
     gdb
     clang-tools
     python3

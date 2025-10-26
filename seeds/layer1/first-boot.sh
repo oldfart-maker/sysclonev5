@@ -58,10 +58,40 @@ ensure_user_and_seatd() {
   log "seatd/groups ensured for $USERNAME"
 }
 
+install_dev_tools() {
+  log "installing dev tools (cmake, ninja, toolchain, etc.)"
+
+  # Quick online check (best-effort). Skip if no network.
+  if ! ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 && \
+     ! ping -c1 -W2 archlinux.org >/dev/null 2>&1; then
+    log "network not reachable; skipping dev tools install"
+    return 0
+  fi
+
+  # Refresh package DB; tolerate mirror hiccups
+  if ! pacman -Sy --noconfirm >/dev/null 2>&1; then
+    log "pacman -Sy failed (retrying once)"
+    sleep 2
+    pacman -Sy --noconfirm || { log "pacman -Sy failed; continuing without dev tools"; return 0; }
+  fi
+
+  local pkgs=(
+    base-devel
+    cmake ninja pkgconf
+    gdb clang
+    python jq
+  )
+
+  if ! pacman -S --needed --noconfirm "${pkgs[@]}"; then
+    log "dev tools install had errors (continuing)"
+  fi
+}
+
 main() {
   log "first-boot start"
   provision_wifi || true
   ensure_user_and_seatd
+  install_dev_tools
   log "first-boot done"
 }
 main "$@"
